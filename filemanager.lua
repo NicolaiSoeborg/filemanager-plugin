@@ -2,7 +2,6 @@ VERSION = "2.1.0"
 
 treeView = nil
 cwd = WorkingDirectory()
-driveLetter = "C:\\"
 isWin = (OS == "windows")
 
 -- Uncomment to enable debugging
@@ -125,7 +124,7 @@ function preDelete(view)
             type = "file"
             command = isWin and "del" or "rm -I"
         end
-        command = command .. " " .. (isWin and driveLetter or "") .. JoinPaths(cwd, selected)
+        command = command .. " " .. JoinPaths(cwd, selected)
 
         local yes, cancel = messenger:YesNoPrompt("Do you want to delete " .. type .. " '" .. selected .. "'? ")
         if not cancel and yes then
@@ -153,7 +152,6 @@ function preInsertNewline(view)
             refreshTree()
         else  -- open file in new vertical view
             local filename = JoinPaths(cwd, selected)
-            if isWin then filename = driveLetter .. filename end
             CurView():VSplitIndex(NewBuffer("", filename), 1)
             CurView():ReOpen()
             tabs[curTab+1]:Resize()
@@ -175,22 +173,47 @@ function preQuitAll(view) treeView.Buf.IsModified = false end
 
 -- scanDir will scan contents of the directory passed.
 function scanDir(directory)
-    debug("***** scanDir(directory) ---> ",directory)
-    local i, list, proc = 3, {}, nil
-    list[1] = (isWin and driveLetter or "") .. cwd  -- current directory working.
-    list[2] = ".."  -- used for going up a level in directory.
-    if isWin then  -- if windows
-        proc = io.popen('dir /a /b "'..directory..'"')
-    else           -- linux or unix system
-        proc = io.popen('ls -Ap "'..directory..'"')
+  debug("***** scanDir(directory) ---> ",directory)
+
+  -- -A displays normally hidden files (dotfiles)
+  -- -p adds a forward-slash to directories
+  local ls_cmd = "ls -Ap"
+
+  if isWin then
+    -- /A displays normally hidden files (dotfiles)
+    -- /B outputs minimal listing instead of all that header info
+    -- /O:N sorts alphabetically
+    ls_cmd = "dir /A /B /O:N"
+  end
+
+  -- ls_cmd = ls_cmd .. ' "' .. directory .. '"'
+
+  local list = {[1] = cwd, [2] = ".."}
+  -- 1 and 2 are the current dir & the ".."
+  local i = 3
+
+  -- Windows' dir command fails if you quote directory
+  local proc = io.popen(ls_cmd .. " " .. directory)
+
+  local function insert_list(x)
+    list[i] = x
+    i = i + 1
+  end
+
+  if isWin then
+    -- proc:lines() doesn't work on windows, for whatever reason
+    local proc_out = proc:read("*a")
+    for match in string.gmatch(proc_out, "[^\r\n]+") do
+      insert_list(match)
     end
-    -- load filenames to a list
-    for filename in proc:lines() do
-        list[i] = filename
-        i = i + 1
+  else
+    for line in proc:lines() do
+      insert_list(line)
     end
-    proc:close()
-    return list
+  end
+
+  proc:close()
+  return list
 end
 
 -- isDir checks if the path passed is a directory.
@@ -199,7 +222,7 @@ function isDir(path)
     debug("***** isDir(path) ---> ",path)
     local dir, proc = false, nil
     if isWin then
-        proc = io.popen('IF EXIST ' .. driveLetter .. JoinPaths(cwd, path) .. '/* (ECHO d) ELSE (ECHO -)')
+        proc = io.popen('IF EXIST ' .. JoinPaths(cwd, path) .. '/* (ECHO d) ELSE (ECHO -)')
     else
         proc = io.popen('ls -adl "' .. JoinPaths(cwd, path) .. '"')
     end
