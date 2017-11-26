@@ -114,7 +114,7 @@ end
 -- Moves the cursor to the ".." in treeView
 local function move_cursor_top()
     -- -1 is to not go past the ".." in the buffer
-    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 1)
+    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 2)
 
     -- select the line after moving
     selectLineInTree()
@@ -212,7 +212,7 @@ end
 function preCursorUp(view)  
     if view == treeView then
         debug("***** preCursor() *****")
-        if treeView.Buf.Cursor.Loc.Y == 1 then
+        if treeView.Buf.Cursor.Loc.Y == 2 then
             return false
 end end end
 
@@ -251,7 +251,7 @@ function preInsertNewline(view)
     if view == treeView then
         debug("***** preInsertNewLine()  *****")
         local selected = getSelection()
-        if treeView.Buf.Cursor.Loc.Y == 0 then
+        if treeView.Buf.Cursor.Loc.Y <= 1 then
             return false -- topmost line is cwd, so disallowing selecting it
         elseif isDir(selected) then  -- if directory then reload contents of tree view
             cwd = JoinPaths(cwd, selected)
@@ -298,9 +298,21 @@ function refresh_view(directory)
     -- Passed to insert_to_view() to tell it whether or not to concat a newline
     local use_newline = true
 
+    -- Do NOT try to concat in a loop, it freezes micro...
+    -- instead, use a temporary table to hold values
+    local string_table = {}
+    for i = 1, treeView.Width do
+      -- This is an ascii char that doesn't have gaps when concatenated
+      string_table[i] = "─"
+    end
+    -- Localize for speed
+    local table_concat = table.concat
+    local separator = table_concat(string_table)
+
     -- Insert the dir and ".." before anything else
     insert_to_view(Loc(0, 0), directory, use_newline)
-    insert_to_view(Loc(0, 1), "..", use_newline)
+    insert_to_view(Loc(0, 1), separator, use_newline)
+    insert_to_view(Loc(0, 2), "..", use_newline)
   
     local readout_name = ""
     -- Loop through all the files/directories in current dir
@@ -322,7 +334,7 @@ function refresh_view(directory)
 
       -- Insert the current file/dir to buffer
       -- +1 to skip the first two positions that hold the dir & ".."
-      insert_to_view(Loc(0, i + 1), readout_name, use_newline)
+      insert_to_view(Loc(0, i + 2), readout_name, use_newline)
     end
   end
 end
