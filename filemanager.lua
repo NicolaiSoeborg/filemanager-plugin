@@ -62,14 +62,19 @@ end
 function refreshTree()
     debug("***** refreshTree() *****")
     treeView.Buf:remove(treeView.Buf:Start(), treeView.Buf:End())
-    local list = table.concat(scanDir(cwd), "\n ")
-    treeView.Buf:Insert(Loc(0,0),list)
+
+    -- Refresh the view to show the current dirs/files
+    refresh_view(cwd)
+
 end
 
 -- returns currently selected line in treeView
 function getSelection()
-    debug("***** getSelection() ---> ",treeView.Buf:Line(treeView.Cursor.Loc.Y):sub(2))
-    return (treeView.Buf:Line(treeView.Cursor.Loc.Y)):sub(2)
+    -- -1 to conform to Go's zero-based indicies
+    local selection = treeView.Buf:Line(treeView.Buf.Cursor.Loc.Y)
+    messenger:AddLog("***** getSelection() ---> ", selection)
+    -- Returns the string in [y] index from the buffer
+    return selection
 end
 
 -- don't use built-in view.Cursor:SelectLine() as it will copy to clipboard (in old versions of Micro)
@@ -174,11 +179,16 @@ function preQuit(view)
 end
 function preQuitAll(view) treeView.Buf.IsModified = false end
 
--- scanDir will scan contents of the directory passed.
-function scanDir(directory)
-  messenger:AddLog("***** scanDir(directory) ---> ", directory)
+local function insert_to_view(loc_struct, content, concat_newline)
+  if concat_newline then
+    content = content .. "\n"
+  end
+  treeView.Buf:Insert(loc_struct, content)
+end
 
-  local list = {[1] = cwd, [2] = ".."}
+-- refresh_view will scan contents of the directory passed and fill the view with them
+function refresh_view(directory)
+  messenger:AddLog("***** refresh_view(directory) ---> ", directory)
 
   local go_ioutil = import("ioutil")
   -- Gets a list of all the files in the current dir
@@ -187,6 +197,13 @@ function scanDir(directory)
   if readout == nil then
     messenger:Error("Error reading directory: ", directory)
   else
+    -- Passed to insert_to_view() to tell it whether or not to concat a newline
+    local use_newline = true
+
+    -- Insert the dir and ".." before anything else
+    insert_to_view(Loc(0, 0), directory, use_newline)
+    insert_to_view(Loc(0, 1), "..", use_newline)
+  
     local readout_name = ""
     -- Loop through all the files/directories in current dir
     for i = 1, #readout do
@@ -198,12 +215,18 @@ function scanDir(directory)
         -- Shouldn't cause issues on Windows, as it lets you use either slash type
         readout_name = readout_name .. "/"
       end
-      -- Actually add the file/dir to the list to be displayed
-      list[i + 2] = readout_name
+
+      -- Check if we're on the last line
+      if i == #readout then
+        -- Don't use a newline on the last insert
+        use_newline = false
+      end
+
+      -- Insert the current file/dir to buffer
+      -- +1 to skip the first two positions that hold the dir & ".."
+      insert_to_view(Loc(0, i + 1), readout_name, use_newline)
     end
   end
-
-  return list
 end
 
 -- isDir checks if the path passed is a directory.
