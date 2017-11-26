@@ -58,18 +58,6 @@ function CloseTree()
     end
 end
 
--- refreshTree will remove the buffer and load contents from folder
-function refreshTree()
-    debug("***** refreshTree() *****")
-    treeView.Buf:remove(treeView.Buf:Start(), treeView.Buf:End())
-
-    -- Refresh the view to show the current dirs/files
-    refresh_view(cwd)
-
-    -- Highlight where the cursor is after a refresh
-    selectLineInTree()
-end
-
 -- returns the line in treeView that the cursor is on
 function getSelection()
     -- -1 to conform to Go's zero-based indicies
@@ -79,14 +67,71 @@ function getSelection()
     return selection
 end
 
+local function scroll_to_top()
+  -- Scroll up to show the top of the view
+  treeView:ScrollUp(treeView.Topline)
+end
+
+local function scroll_till_visible()
+  -- The bottom of what's visible | this is a function, so save results to only run once
+  local bot_line = treeView:Bottomline()
+
+  -- If the cursor isn't visible (or is at the top) in the view
+  if treeView.Buf.Cursor.Loc.Y <= treeView.Topline then
+    local scroll_amount = bot_line - (treeView.Topline + treeView.Buf.Cursor.Loc.Y)
+    -- If it's trying to scroll more than exists, just go to top
+    if scroll_amount > treeView.Buf:LinesNum() then
+      scroll_to_top()
+    else
+      -- Scroll up till the cursor is visible in the view
+      -- +1 because of zero-based index
+      treeView:ScrollUp(scroll_amount)
+    end
+  elseif treeView.Buf.Cursor.Loc.Y > bot_line then
+    -- If the cursor is below the bottom of what's visible, scroll down till it is visible.
+    -- +2 because the zero-based index, and Micro's statusbar covering text
+    treeView:ScrollDown(treeView.Buf.Cursor.Loc.Y - bot_line + 2)
+  end
+end
+
 -- Hightlights the line when you move the cursor up/down
 function selectLineInTree()
   debug("***** selectLineInTree() *****")
-  -- Puts the cursor back in bounds (if it isn't)
-  treeView.Buf.Cursor:Relocate()
+
+  -- Check if the cursor is out of bounds of the refresh tree
+  if treeView.Buf.Cursor.Loc.Y > treeView.Buf:LinesNum() then
+    -- Puts the cursor back in bounds
+    treeView.Buf.Cursor:Relocate()
+  end
 
   -- Highlight the current line where the cursor is
   treeView.Buf.Cursor:SelectLine()
+
+  -- Makes sure the cursor is visible (if it isn't)
+  scroll_till_visible()
+end
+
+-- Moves the cursor to the ".." in treeView
+local function move_cursor_top()
+    -- -1 is to not go past the ".." in the buffer
+    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 1)
+
+    -- select the line after moving
+    selectLineInTree()
+
+    scroll_to_top()
+end
+
+-- refreshTree will remove the buffer and load contents from folder
+function refreshTree()
+    debug("***** refreshTree() *****")
+    treeView.Buf:remove(treeView.Buf:Start(), treeView.Buf:End())
+
+    -- Refresh the view to show the current dirs/files
+    refresh_view(cwd)
+
+    -- Since we're refreshing the tree, move cursor to top
+    move_cursor_top()
 end
 
 -- 'beautiful' file selection:
@@ -112,18 +157,6 @@ function preParagraphNext(view)
   if view == treeView then
     return false
   end
-end
-
--- Moves the cursor to the ".." in treeView
-local function move_cursor_top()
-    -- -1 is to not go past the ".." in the buffer
-    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 1)
-
-    -- select the line after moving
-    selectLineInTree()
-
-    -- Scroll up to show the top of the view
-    treeView:ScrollUp(treeView.Topline)
 end
 
 -- Triggered on pageup
