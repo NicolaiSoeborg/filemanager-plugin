@@ -167,7 +167,7 @@ end
 function preCursorUp(view)  
     if view == treeView then
         debug("***** preCursor() *****")
-        if view.Cursor.Loc.Y == 1 then
+        if treeView.Buf.Cursor.Loc.Y == 1 then
             return false
 end end end
 
@@ -200,14 +200,13 @@ function preDelete(view)
     end
 end
 
-
 -- When user presses enter then if it is a folder clear buffer and reload contents with folder selected.
 -- If it is a file then open it in a new vertical view
 function preInsertNewline(view)
     if view == treeView then
         debug("***** preInsertNewLine()  *****")
         local selected = getSelection()
-        if view.Cursor.Loc.Y == 0 then
+        if treeView.Buf.Cursor.Loc.Y == 0 then
             return false -- topmost line is cwd, so disallowing selecting it
         elseif isDir(selected) then  -- if directory then reload contents of tree view
             cwd = JoinPaths(cwd, selected)
@@ -215,7 +214,7 @@ function preInsertNewline(view)
         else  -- open file in new vertical view
             local filename = JoinPaths(cwd, selected)
             CurView():VSplitIndex(NewBuffer("", filename), 1)
-            CurView():ReOpen()
+            CurView().Buf:ReOpen()
             tabs[curTab+1]:Resize()
         end
         return false
