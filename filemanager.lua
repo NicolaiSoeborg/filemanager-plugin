@@ -66,9 +66,11 @@ function refreshTree()
     -- Refresh the view to show the current dirs/files
     refresh_view(cwd)
 
+    -- Highlight where the cursor is after a refresh
+    selectLineInTree()
 end
 
--- returns currently selected line in treeView
+-- returns the line in treeView that the cursor is on
 function getSelection()
     -- -1 to conform to Go's zero-based indicies
     local selection = treeView.Buf:Line(treeView.Buf.Cursor.Loc.Y)
@@ -77,20 +79,72 @@ function getSelection()
     return selection
 end
 
--- don't use built-in view.Cursor:SelectLine() as it will copy to clipboard (in old versions of Micro)
--- TODO: We require micro >= 1.3.2, so is this still an issue?
-function selectLineInTree(view)
-    if view == treeView then
-        debug("***** selectLineInTree() *****")
-        local y = view.Cursor.Loc.Y
-        view.Cursor.CurSelection[1] = Loc(0, y)
-        view.Cursor.CurSelection[2] = Loc(view.Width, y)
-    end
+-- Hightlights the line when you move the cursor up/down
+function selectLineInTree()
+  debug("***** selectLineInTree() *****")
+  -- Puts the cursor back in bounds (if it isn't)
+  treeView.Buf.Cursor:Relocate()
+
+  -- Highlight the current line where the cursor is
+  treeView.Buf.Cursor:SelectLine()
 end
 
 -- 'beautiful' file selection:
-function onCursorDown(view) selectLineInTree(view) end
-function onCursorUp(view)   selectLineInTree(view) end
+function onCursorDown(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+function onCursorUp(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+-- Moves the cursor to the ".." in treeView
+local function move_cursor_top()
+    -- -1 is to not go past the ".." in the buffer
+    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 1)
+
+    -- select the line after moving
+    selectLineInTree()
+
+    -- Scroll up to show the top of the view
+    treeView:ScrollUp(treeView.Topline)
+end
+
+-- Triggered on pageup
+function preCursorPageUp(view)
+  if view == treeView then
+    move_cursor_top()
+    -- Tell it not to actually do a pageup
+    return false
+  end
+end
+
+-- Triggered on ctrl+up
+function preCursorStart(view)
+  if view == treeView then
+    move_cursor_top()
+    -- Tell it not to actually do a pageup
+    return false
+  end
+end
+
+-- Triggered on pagedown
+function onCursorPageDown(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+-- Triggered on ctrl+down
+function onCursorEnd(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
 
 -- mouse callback from micro editor when a left button is clicked on your view
 function preMousePress(view, event)
@@ -100,9 +154,9 @@ function preMousePress(view, event)
          return true
     end
 end
+
 function onMousePress(view, event)
     if view == treeView then
-        selectLineInTree(view)
         preInsertNewline(view)
         return false
     end
