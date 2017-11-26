@@ -42,6 +42,8 @@ function setupOptions()
     if status ~= nil then messenger:Error("Error setting autosave option -> ", status)  end
     status = SetLocalOption("statusline", "false", treeView)
     if status ~= nil then messenger:Error("Error setting statusline option -> ",status) end
+    status = SetLocalOption("scrollbar", "false", treeView)
+    if status ~= nil then messenger:Error("Error setting scrollbar option -> ",status) end
     -- TODO: need to set readonly in view type.
     tabs[curTab+1]:Resize()
 end
@@ -56,34 +58,138 @@ function CloseTree()
     end
 end
 
+-- returns the line in treeView that the cursor is on
+function getSelection()
+    -- -1 to conform to Go's zero-based indicies
+    local selection = treeView.Buf:Line(treeView.Buf.Cursor.Loc.Y)
+    messenger:AddLog("***** getSelection() ---> ", selection)
+    -- Returns the string in [y] index from the buffer
+    return selection
+end
+
+local function scroll_to_top()
+  -- Scroll up to show the top of the view
+  treeView:ScrollUp(treeView.Topline)
+end
+
+local function scroll_till_visible()
+  -- The bottom of what's visible | this is a function, so save results to only run once
+  local bot_line = treeView:Bottomline()
+
+  -- If the cursor isn't visible (or is at the top) in the view
+  if treeView.Buf.Cursor.Loc.Y <= treeView.Topline then
+    local scroll_amount = bot_line - (treeView.Topline + treeView.Buf.Cursor.Loc.Y)
+    -- If it's trying to scroll more than exists, just go to top
+    if scroll_amount > treeView.Buf:LinesNum() then
+      scroll_to_top()
+    else
+      -- Scroll up till the cursor is visible in the view
+      -- +1 because of zero-based index
+      treeView:ScrollUp(scroll_amount)
+    end
+  elseif treeView.Buf.Cursor.Loc.Y > bot_line then
+    -- If the cursor is below the bottom of what's visible, scroll down till it is visible.
+    -- +2 because the zero-based index, and Micro's statusbar covering text
+    treeView:ScrollDown(treeView.Buf.Cursor.Loc.Y - bot_line + 2)
+  end
+end
+
+-- Hightlights the line when you move the cursor up/down
+function selectLineInTree()
+  debug("***** selectLineInTree() *****")
+
+  -- Check if the cursor is out of bounds of the refresh tree
+  if treeView.Buf.Cursor.Loc.Y > treeView.Buf:LinesNum() then
+    -- Puts the cursor back in bounds
+    treeView.Buf.Cursor:Relocate()
+  end
+
+  -- Highlight the current line where the cursor is
+  treeView.Buf.Cursor:SelectLine()
+
+  -- Makes sure the cursor is visible (if it isn't)
+  scroll_till_visible()
+end
+
+-- Moves the cursor to the ".." in treeView
+local function move_cursor_top()
+    -- -1 is to not go past the ".." in the buffer
+    treeView.Buf.Cursor:UpN(treeView.Buf.Cursor.Loc.Y - 2)
+
+    -- select the line after moving
+    selectLineInTree()
+
+    scroll_to_top()
+end
+
 -- refreshTree will remove the buffer and load contents from folder
 function refreshTree()
     debug("***** refreshTree() *****")
     treeView.Buf:remove(treeView.Buf:Start(), treeView.Buf:End())
-    local list = table.concat(scanDir(cwd), "\n ")
-    treeView.Buf:Insert(Loc(0,0),list)
-end
 
--- returns currently selected line in treeView
-function getSelection()
-    debug("***** getSelection() ---> ",treeView.Buf:Line(treeView.Cursor.Loc.Y):sub(2))
-    return (treeView.Buf:Line(treeView.Cursor.Loc.Y)):sub(2)
-end
+    -- Refresh the view to show the current dirs/files
+    refresh_view(cwd)
 
--- don't use built-in view.Cursor:SelectLine() as it will copy to clipboard (in old versions of Micro)
--- TODO: We require micro >= 1.3.2, so is this still an issue?
-function selectLineInTree(view)
-    if view == treeView then
-        debug("***** selectLineInTree() *****")
-        local y = view.Cursor.Loc.Y
-        view.Cursor.CurSelection[1] = Loc(0, y)
-        view.Cursor.CurSelection[2] = Loc(view.Width, y)
-    end
+    -- Since we're refreshing the tree, move cursor to top
+    move_cursor_top()
 end
 
 -- 'beautiful' file selection:
-function onCursorDown(view) selectLineInTree(view) end
-function onCursorUp(view)   selectLineInTree(view) end
+function onCursorDown(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+function onCursorUp(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+function preParagraphPrevious(view)
+  if view == treeView then
+    return false
+  end
+end
+
+function preParagraphNext(view)
+  if view == treeView then
+    return false
+  end
+end
+
+-- Triggered on pageup
+function preCursorPageUp(view)
+  if view == treeView then
+    move_cursor_top()
+    -- Tell it not to actually do a pageup
+    return false
+  end
+end
+
+-- Triggered on ctrl+up
+function preCursorStart(view)
+  if view == treeView then
+    move_cursor_top()
+    -- Tell it not to actually do a pageup
+    return false
+  end
+end
+
+-- Triggered on pagedown
+function onCursorPageDown(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
+
+-- Triggered on ctrl+down
+function onCursorEnd(view)
+  if view == treeView then
+    selectLineInTree()
+  end
+end
 
 -- mouse callback from micro editor when a left button is clicked on your view
 function preMousePress(view, event)
@@ -93,9 +199,9 @@ function preMousePress(view, event)
          return true
     end
 end
+
 function onMousePress(view, event)
     if view == treeView then
-        selectLineInTree(view)
         preInsertNewline(view)
         return false
     end
@@ -106,7 +212,7 @@ end
 function preCursorUp(view)  
     if view == treeView then
         debug("***** preCursor() *****")
-        if view.Cursor.Loc.Y == 1 then
+        if treeView.Buf.Cursor.Loc.Y == 2 then
             return false
 end end end
 
@@ -139,14 +245,13 @@ function preDelete(view)
     end
 end
 
-
 -- When user presses enter then if it is a folder clear buffer and reload contents with folder selected.
 -- If it is a file then open it in a new vertical view
 function preInsertNewline(view)
     if view == treeView then
         debug("***** preInsertNewLine()  *****")
         local selected = getSelection()
-        if view.Cursor.Loc.Y == 0 then
+        if treeView.Buf.Cursor.Loc.Y <= 1 then
             return false -- topmost line is cwd, so disallowing selecting it
         elseif isDir(selected) then  -- if directory then reload contents of tree view
             cwd = JoinPaths(cwd, selected)
@@ -154,7 +259,7 @@ function preInsertNewline(view)
         else  -- open file in new vertical view
             local filename = JoinPaths(cwd, selected)
             CurView():VSplitIndex(NewBuffer("", filename), 1)
-            CurView():ReOpen()
+            CurView().Buf:ReOpen()
             tabs[curTab+1]:Resize()
         end
         return false
@@ -172,11 +277,16 @@ function preQuit(view)
 end
 function preQuitAll(view) treeView.Buf.IsModified = false end
 
--- scanDir will scan contents of the directory passed.
-function scanDir(directory)
-  messenger:AddLog("***** scanDir(directory) ---> ", directory)
+local function insert_to_view(loc_struct, content, concat_newline)
+  if concat_newline then
+    content = content .. "\n"
+  end
+  treeView.Buf:Insert(loc_struct, content)
+end
 
-  local list = {[1] = cwd, [2] = ".."}
+-- refresh_view will scan contents of the directory passed and fill the view with them
+function refresh_view(directory)
+  messenger:AddLog("***** refresh_view(directory) ---> ", directory)
 
   local go_ioutil = import("ioutil")
   -- Gets a list of all the files in the current dir
@@ -185,6 +295,25 @@ function scanDir(directory)
   if readout == nil then
     messenger:Error("Error reading directory: ", directory)
   else
+    -- Passed to insert_to_view() to tell it whether or not to concat a newline
+    local use_newline = true
+
+    -- Do NOT try to concat in a loop, it freezes micro...
+    -- instead, use a temporary table to hold values
+    local string_table = {}
+    for i = 1, treeView.Width do
+      -- This is an ascii char that doesn't have gaps when concatenated
+      string_table[i] = "─"
+    end
+    -- Localize for speed
+    local table_concat = table.concat
+    local separator = table_concat(string_table)
+
+    -- Insert the dir and ".." before anything else
+    insert_to_view(Loc(0, 0), directory, use_newline)
+    insert_to_view(Loc(0, 1), separator, use_newline)
+    insert_to_view(Loc(0, 2), "..", use_newline)
+  
     local readout_name = ""
     -- Loop through all the files/directories in current dir
     for i = 1, #readout do
@@ -196,12 +325,18 @@ function scanDir(directory)
         -- Shouldn't cause issues on Windows, as it lets you use either slash type
         readout_name = readout_name .. "/"
       end
-      -- Actually add the file/dir to the list to be displayed
-      list[i + 2] = readout_name
+
+      -- Check if we're on the last line
+      if i == #readout then
+        -- Don't use a newline on the last insert
+        use_newline = false
+      end
+
+      -- Insert the current file/dir to buffer
+      -- +1 to skip the first two positions that hold the dir & ".."
+      insert_to_view(Loc(0, i + 2), readout_name, use_newline)
     end
   end
-
-  return list
 end
 
 -- isDir checks if the path passed is a directory.
