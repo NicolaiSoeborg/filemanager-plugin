@@ -42,6 +42,8 @@ function setupOptions()
     if status ~= nil then messenger:Error("Error setting autosave option -> ", status)  end
     status = SetLocalOption("statusline", "false", treeView)
     if status ~= nil then messenger:Error("Error setting statusline option -> ",status) end
+    status = SetLocalOption("scrollbar", "false", treeView)
+    if status ~= nil then messenger:Error("Error setting scrollbar option -> ",status) end
     -- TODO: need to set readonly in view type.
     tabs[curTab+1]:Resize()
 end
