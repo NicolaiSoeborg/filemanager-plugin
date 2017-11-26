@@ -102,6 +102,18 @@ function onCursorUp(view)
   end
 end
 
+function preParagraphPrevious(view)
+  if view == treeView then
+    return false
+  end
+end
+
+function preParagraphNext(view)
+  if view == treeView then
+    return false
+  end
+end
+
 -- Moves the cursor to the ".." in treeView
 local function move_cursor_top()
     -- -1 is to not go past the ".." in the buffer
