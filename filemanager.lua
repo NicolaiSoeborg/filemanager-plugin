@@ -612,6 +612,8 @@ local function uncompress_target(y)
 		end
 
 		refresh_and_select()
+	else
+		try_open_at_y(tree_view.Buf.Cursor.Loc.Y)
 	end
 end
 
