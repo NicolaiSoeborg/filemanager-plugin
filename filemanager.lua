@@ -1036,6 +1036,24 @@ function onCursorUp(view)
 	selectline_if_tree(view)
 end
 
+--scroll cursor when mousewheel is scrolled
+function onScrollDown(view)
+	if view == tree_view then
+		tree_view.Buf.Cursor:Down()
+		select_line()
+		-- not sure if return false is required, I'm new to this
+		return false
+	end
+end
+
+function onScrollUp(view)
+	if view == tree_view then
+		tree_view.Buf.Cursor:Up()
+		select_line()
+		return false
+	end
+end
+
 -- Alt-Shift-{
 -- Go to target's parent directory (if exists)
 function preParagraphPrevious(view)
@@ -1090,9 +1108,13 @@ function preMousePress(view, event)
 		local x, y = event:Position()
 		-- Fixes the y because softwrap messes with it
 		local new_x, new_y = tree_view:GetMouseClickLocation(x, y)
-		-- Try to open whatever is at the click's y index
-		-- Will go into/back dirs based on what's clicked, nothing gets expanded
-		try_open_at_y(new_y)
+
+		--open item if it is selected, otherwise select it.
+		if tree_view.Buf.Cursor.Loc.Y == new_y then
+			try_open_at_y(new_y)
+		else
+			select_line(new_y)
+		end
 		-- Don't actually allow the mousepress to trigger, so we avoid highlighting stuff
 		return false
 	end
