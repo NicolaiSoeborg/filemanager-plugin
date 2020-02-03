@@ -527,6 +527,9 @@ local function go_back_dir()
 	end
 end
 
+-- Store a reference to the last opened file
+open_files ={}
+
 -- Tries to open the current index
 -- If it's the top dir indicator, or separator, nothing happens
 -- If it's ".." then it tries to go back a dir
@@ -543,13 +546,21 @@ local function try_open_at_y(y)
 		if scanlist[y].dirmsg ~= "" then
 			-- if passed path is a directory, update the current dir to be one deeper..
 			update_current_dir(scanlist[y].abspath)
-		else
+			-- If the targeted file is already open in a buffer, do not re-open
+    elseif open_files[scanlist[y].abspath] then 
+			messenger:Error("File already open")
+    else
 			-- If it's a file, then open it
 			messenger:Message("Filemanager opened ", scanlist[y].abspath)
 			-- Opens the absolute path in new vertical view
 			CurView():VSplitIndex(NewBufferFromFile(scanlist[y].abspath), 1)
 			-- Resizes all views after opening a file
 			tabs[curTab + 1]:Resize()
+			-- Add the file to the open files table
+			local filepath = scanlist[y].abspath
+			-- Set the value to true so we can just do a table lookup
+			-- Instead of a "pairs(table)" iteration to check for it
+			open_files[filepath] = true
 		end
 	else
 		messenger:Error("Can't open that")
@@ -1008,6 +1019,8 @@ end
 
 -- Close current
 function preQuit(view)
+	-- Remove the current file from the open files table
+	open_files[view.Buf.path] = nil
 	if view == tree_view then
 		-- A fake quit function
 		close_tree()
