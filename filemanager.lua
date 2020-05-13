@@ -32,7 +32,7 @@ end
 -- Holds the micro.CurPane() we're manipulating
 local tree_view = nil
 -- Keeps track of the current working directory
-local current_dir = WorkingDirectory()
+local current_dir = os.Getwd()
 -- Keep track of current highest visible indent to resize width appropriately
 local highest_visible_indent = 0
 -- Holds a table of paths -- objects from new_listobj() calls
@@ -846,7 +846,7 @@ local function open_tree()
 	SetLocalOption("scrollbar", "false", tree_view)
 
 	-- Fill the scanlist, and then print its contents to tree_view
-	update_current_dir(WorkingDirectory())
+	update_current_dir(os.Getwd())
 end
 
 -- close_tree will close the tree plugin view and release memory.
@@ -1194,12 +1194,12 @@ end
 local precmd_dir
 
 function preCommandMode(view)
-	precmd_dir = WorkingDirectory()
+	precmd_dir = os.Getwd()
 end
 
 -- Update the current dir when using "cd"
 function onCommandMode(view)
-	local new_dir = WorkingDirectory()
+	local new_dir = os.Getwd()
 	-- Only do anything if the tree is open, and they didn't cd to nothing
 	if tree_view ~= nil and new_dir ~= precmd_dir and new_dir ~= current_dir then
 		update_current_dir(new_dir)
