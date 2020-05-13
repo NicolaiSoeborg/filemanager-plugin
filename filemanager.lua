@@ -1,5 +1,12 @@
 VERSION = "4.0.0"
 
+local micro = import("micro")
+local config = import("micro/config")
+local shell = import("micro/shell")
+local buffer = import("micro/buffer")
+local os = import("os")
+local filepath = import("path/filepath")
+
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
 if GetOption("filemanager-showdotfiles") == nil then
 	AddOption("filemanager-showdotfiles", true)
