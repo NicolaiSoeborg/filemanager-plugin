@@ -8,30 +8,20 @@ local os = import("os")
 local filepath = import("path/filepath")
 
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
-if GetOption("filemanager-showdotfiles") == nil then
-	AddOption("filemanager-showdotfiles", true)
-end
+config.RegisterCommonOption("filemanager", "showdotfiles", true)
 
 -- Let the user disable showing files ignored by the VCS (i.e. gitignored)
-if GetOption("filemanager-showignored") == nil then
-	AddOption("filemanager-showignored", true)
-end
+config.RegisterCommonOption("filemanager", "showignored", true)
 
 -- Let the user disable going to parent directory via left arrow key when file selected (not directory)
-if GetOption("filemanager-compressparent") == nil then
-	AddOption("filemanager-compressparent", true)
-end
+config.RegisterCommonOption("filemanager", "compressparent", true)
 
 -- Let the user choose to list sub-folders first when listing the contents of a folder
-if GetOption("filemanager-foldersfirst") == nil then
-	AddOption("filemanager-foldersfirst", true)
-end
+config.RegisterCommonOption("filemanager", "foldersfirst", true)
 
 -- Lets the user have the filetree auto-open any time Micro is opened
 -- false by default, as it's a rather noticable user-facing change
-if GetOption("filemanager-openonstart") == nil then
-	AddOption("filemanager-openonstart", false)
-end
+config.RegisterCommonOption("filemanager", "openonstart", false)
 
 -- Clear out all stuff in Micro's messenger
 local function clear_messenger()
@@ -167,10 +157,10 @@ local function get_scanlist(dir, ownership, indent_n)
 		return new_listobj(abs_path, dirmsg, ownership, indent_n)
 	end
 
-	-- Save so we don't have to rerun GetOption a bunch
-	local show_dotfiles = GetOption("filemanager-showdotfiles")
-	local show_ignored = GetOption("filemanager-showignored")
-	local folders_first = GetOption("filemanager-foldersfirst")
+	-- Save so we don't have to rerun config.GetGlobalOption a bunch
+	local show_dotfiles = config.GetGlobalOption("filemanager.showdotfiles")
+	local show_ignored = config.GetGlobalOption("filemanager.showignored")
+	local folders_first = config.GetGlobalOption("filemanager.foldersfirst")
 
 	-- The list of VCS-ignored files (if any)
 	-- Only bother getting ignored files if we're not showing ignored
@@ -423,7 +413,7 @@ local function compress_target(y, delete_y)
 			-- Update the dir message
 			scanlist[y].dirmsg = "+"
 		end
-	elseif GetOption("filemanager-compressparent") and not delete_y then
+	elseif config.GetGlobalOption("filemanager.compressparent") and not delete_y then
 		goto_parent_dir()
 		-- Prevent a pointless refresh of the view
 		return
@@ -1350,7 +1340,7 @@ AddRuntimeFile("filemanager", "syntax", "syntax.yaml")
 -- NOTE: This must be below the syntax load command or coloring won't work
 -- Just auto-open if the option is enabled
 -- This will run when the plugin first loads
-if GetOption("filemanager-openonstart") == true then
+if config.GetGlobalOption("filemanager.openonstart") == true then
 	-- Check for safety on the off-chance someone's init.lua breaks this
 	if tree_view == nil then
 		open_tree()
