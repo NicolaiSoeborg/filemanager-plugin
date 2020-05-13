@@ -117,7 +117,7 @@ end
 -- Returns the basename of a path (aka a name without leading path)
 local function get_basename(path)
 	if path == nil then
-		messenger:AddLog("Bad path passed to get_basename")
+		micro.Log("Bad path passed to get_basename")
 		return nil
 	else
 		-- Get Go's path lib for a basename callback
@@ -665,7 +665,7 @@ function rename_at_cursor(new_name)
 	local log_out = golib_os.Rename(old_path, new_path)
 	-- Output the log, if any, of the rename
 	if log_out ~= nil then
-		messenger:AddLog("Rename log: ", log_out)
+		micro.Log("Rename log: ", log_out)
 	end
 
 	-- Check if the rename worked
@@ -728,11 +728,11 @@ local function create_filedir(filedir_name, make_dir)
 	if make_dir then
 		-- Creates the dir
 		golib_os.Mkdir(filedir_path, golib_os.ModePerm)
-		messenger:AddLog("Filemanager created directory: " .. filedir_path)
+		micro.Log("Filemanager created directory: " .. filedir_path)
 	else
 		-- Creates the file
 		golib_os.Create(filedir_path)
-		messenger:AddLog("Filemanager created file: " .. filedir_path)
+		micro.Log("Filemanager created file: " .. filedir_path)
 	end
 
 	-- If the file we tried to make doesn't exist, fail
