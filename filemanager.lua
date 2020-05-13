@@ -29,7 +29,7 @@ local function clear_messenger()
 	messenger:Clear()
 end
 
--- Holds the CurView() we're manipulating
+-- Holds the micro.CurPane() we're manipulating
 local tree_view = nil
 -- Keeps track of the current working directory
 local current_dir = WorkingDirectory()
@@ -544,7 +544,7 @@ local function try_open_at_y(y)
 			-- If it's a file, then open it
 			micro.InfoBar():Message("Filemanager opened ", scanlist[y].abspath)
 			-- Opens the absolute path in new vertical view
-			CurView():VSplitIndex(NewBufferFromFile(scanlist[y].abspath), 1)
+			micro.CurPane():VSplitIndex(NewBufferFromFile(scanlist[y].abspath), 1)
 			-- Resizes all views after opening a file
 			tabs[curTab + 1]:Resize()
 		end
@@ -632,7 +632,7 @@ end
 -- Prompts for a new name, then renames the file/dir at the cursor's position
 -- Not local so Micro can use it
 function rename_at_cursor(new_name)
-	if CurView() ~= tree_view then
+	if micro.CurPane() ~= tree_view then
 		micro.InfoBar():Message("Rename only works with the cursor in the tree!")
 		return
 	end
@@ -680,7 +680,7 @@ end
 
 -- Prompts the user for the file/dir name, then creates the file/dir using Go's os package
 local function create_filedir(filedir_name, make_dir)
-	if CurView() ~= tree_view then
+	if micro.CurPane() ~= tree_view then
 		micro.InfoBar():Message("You can't create a file/dir if your cursor isn't in the tree!")
 		return
 	end
@@ -821,9 +821,9 @@ end
 -- open_tree setup's the view
 local function open_tree()
 	-- Open a new Vsplit (on the very left)
-	CurView():VSplitIndex(NewBuffer("", "filemanager"), 0)
+	micro.CurPane():VSplitIndex(NewBuffer("", "filemanager"), 0)
 	-- Save the new view so we can access it later
-	tree_view = CurView()
+	tree_view = micro.CurPane()
 
 	-- Set the width of tree_view to 30% & lock it
 	tree_view.Width = 30
@@ -873,13 +873,13 @@ end
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function uncompress_at_cursor()
-	if CurView() == tree_view then
+	if micro.CurPane() == tree_view then
 		uncompress_target(get_safe_y())
 	end
 end
 
 function compress_at_cursor()
-	if CurView() == tree_view then
+	if micro.CurPane() == tree_view then
 		-- False to not delete y
 		compress_target(get_safe_y(), false)
 	end
@@ -888,7 +888,7 @@ end
 -- Goes up 1 visible directory (if any)
 -- Not local so it can be bound
 function goto_prev_dir()
-	if CurView() ~= tree_view or scanlist_is_empty() then
+	if micro.CurPane() ~= tree_view or scanlist_is_empty() then
 		return
 	end
 
@@ -912,7 +912,7 @@ end
 -- Goes down 1 visible directory (if any)
 -- Not local so it can be bound
 function goto_next_dir()
-	if CurView() ~= tree_view or scanlist_is_empty() then
+	if micro.CurPane() ~= tree_view or scanlist_is_empty() then
 		return
 	end
 
@@ -941,7 +941,7 @@ end
 -- Goes to the parent directory (if any)
 -- Not local so it can be keybound
 function goto_parent_dir()
-	if CurView() ~= tree_view or scanlist_is_empty() then
+	if micro.CurPane() ~= tree_view or scanlist_is_empty() then
 		return
 	end
 
@@ -955,7 +955,7 @@ function goto_parent_dir()
 end
 
 function try_open_at_cursor()
-	if CurView() ~= tree_view or scanlist_is_empty() then
+	if micro.CurPane() ~= tree_view or scanlist_is_empty() then
 		return
 	end
 
@@ -1346,7 +1346,7 @@ if config.GetGlobalOption("filemanager.openonstart") == true then
 		open_tree()
 		-- Puts the cursor back in the empty view that initially spawns
 		-- This is so the cursor isn't sitting in the tree view at startup
-		CurView():NextSplit(false)
+		micro.CurPane():NextSplit(false)
 	else
 		-- Log error so they can fix it
 		messenger.AddLog(
