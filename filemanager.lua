@@ -82,7 +82,7 @@ local function is_dir(path)
 		return file_info:IsDir()
 	else
 		-- Couldn't stat the file/dir, usually because no read permissions
-		messenger:Error("Error checking if is dir: ", stat_error)
+		micro.InfoBar():Error("Error checking if is dir: ", stat_error)
 		-- Nil since we can't read the path
 		return nil
 	end
@@ -145,7 +145,7 @@ local function get_scanlist(dir, ownership, indent_n)
 
 	-- dir_scan will be nil if the directory is read-protected (no permissions)
 	if dir_scan == nil then
-		messenger:Error("Error scanning dir: ", scan_error)
+		micro.InfoBar():Error("Error scanning dir: ", scan_error)
 		return nil
 	end
 
@@ -459,7 +459,7 @@ function prompt_delete_at_cursor()
 	local y = get_safe_y()
 	-- Don't let them delete the top 3 index dir/separator/..
 	if y == 0 or scanlist_is_empty() then
-		messenger:Error("You can't delete that")
+		micro.InfoBar():Error("You can't delete that")
 		-- Exit early if there's nothing to delete
 		return
 	end
@@ -475,15 +475,15 @@ function prompt_delete_at_cursor()
 		-- Delete the target (if its a dir then the children too)
 		local remove_log = go_os.RemoveAll(scanlist[y].abspath)
 		if remove_log == nil then
-			messenger:Message("Filemanager deleted: ", scanlist[y].abspath)
+			micro.InfoBar():Message("Filemanager deleted: ", scanlist[y].abspath)
 			-- Remove the target (and all nested) from scanlist[y + 1]
 			-- true to delete y
 			compress_target(get_safe_y(), true)
 		else
-			messenger:Error("Failed deleting file/dir: ", remove_log)
+			micro.InfoBar():Error("Failed deleting file/dir: ", remove_log)
 		end
 	else
-		messenger:Message("Nothing was deleted")
+		micro.InfoBar():Message("Nothing was deleted")
 	end
 end
 
@@ -545,14 +545,14 @@ local function try_open_at_y(y)
 			update_current_dir(scanlist[y].abspath)
 		else
 			-- If it's a file, then open it
-			messenger:Message("Filemanager opened ", scanlist[y].abspath)
+			micro.InfoBar():Message("Filemanager opened ", scanlist[y].abspath)
 			-- Opens the absolute path in new vertical view
 			CurView():VSplitIndex(NewBufferFromFile(scanlist[y].abspath), 1)
 			-- Resizes all views after opening a file
 			tabs[curTab + 1]:Resize()
 		end
 	else
-		messenger:Error("Can't open that")
+		micro.InfoBar():Error("Can't open that")
 	end
 end
 
@@ -636,13 +636,13 @@ end
 -- Not local so Micro can use it
 function rename_at_cursor(new_name)
 	if CurView() ~= tree_view then
-		messenger:Message("Rename only works with the cursor in the tree!")
+		micro.InfoBar():Message("Rename only works with the cursor in the tree!")
 		return
 	end
 
 	-- Safety check they actually passed a name
 	if new_name == nil then
-		messenger:Error('When using "rename" you need to input a new name')
+		micro.InfoBar():Error('When using "rename" you need to input a new name')
 		return
 	end
 
@@ -651,7 +651,7 @@ function rename_at_cursor(new_name)
 	-- Check if they're trying to rename the top stuff
 	if y == 0 then
 		-- Error since they tried to rename the top stuff
-		messenger:Message("You can't rename that!")
+		micro.InfoBar():Message("You can't rename that!")
 		return
 	end
 
@@ -670,7 +670,7 @@ function rename_at_cursor(new_name)
 
 	-- Check if the rename worked
 	if not path_exists(new_path) then
-		messenger:Error("Path doesn't exist after rename!")
+		micro.InfoBar():Error("Path doesn't exist after rename!")
 		return
 	end
 
@@ -684,13 +684,13 @@ end
 -- Prompts the user for the file/dir name, then creates the file/dir using Go's os package
 local function create_filedir(filedir_name, make_dir)
 	if CurView() ~= tree_view then
-		messenger:Message("You can't create a file/dir if your cursor isn't in the tree!")
+		micro.InfoBar():Message("You can't create a file/dir if your cursor isn't in the tree!")
 		return
 	end
 
 	-- Safety check they passed a name
 	if filedir_name == nil then
-		messenger:Error('You need to input a name when using "touch" or "mkdir"!')
+		micro.InfoBar():Error('You need to input a name when using "touch" or "mkdir"!')
 		return
 	end
 
@@ -718,7 +718,7 @@ local function create_filedir(filedir_name, make_dir)
 
 	-- Check if the name is already taken by a file/dir
 	if path_exists(filedir_path) then
-		messenger:Error("You can't create a file/dir with a pre-existing name")
+		micro.InfoBar():Error("You can't create a file/dir with a pre-existing name")
 		return
 	end
 
@@ -737,7 +737,7 @@ local function create_filedir(filedir_name, make_dir)
 
 	-- If the file we tried to make doesn't exist, fail
 	if not path_exists(filedir_path) then
-		messenger:Error("The file/dir creation failed")
+		micro.InfoBar():Error("The file/dir creation failed")
 
 		return
 	end
