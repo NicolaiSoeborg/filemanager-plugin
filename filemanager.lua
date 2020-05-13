@@ -1,4 +1,4 @@
-VERSION = "3.4.0"
+VERSION = "4.0.0"
 
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
 if GetOption("filemanager-showdotfiles") == nil then
