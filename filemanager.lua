@@ -220,12 +220,12 @@ local function get_safe_y(optional_y)
 	-- Make the passed y optional
 	if optional_y == nil then
 		-- Default to cursor's Y loc if nothing was passed, instead of declaring another y
-		optional_y = tree_view.Buf.Cursor.Loc.Y
+		optional_y = tree_view.Cursor.Loc.Y
 	end
 	-- 0/1/2 would be the top "dir, separator, .." so check if it's past
 	if optional_y > 2 then
 		-- -2 to conform to our scanlist, since zero-based Go index & Lua's one-based
-		y = tree_view.Buf.Cursor.Loc.Y - 2
+		y = tree_view.Cursor.Loc.Y - 2
 	end
 	return y
 end
@@ -245,22 +245,22 @@ local function select_line(last_y)
 		-- Don't let them move past ".." by checking the result first
 		if last_y > 1 then
 			-- If the last position was valid, move back to it
-			tree_view.Buf.Cursor.Loc.Y = last_y
+			tree_view.Cursor.Loc.Y = last_y
 		end
-	elseif tree_view.Buf.Cursor.Loc.Y < 2 then
+	elseif tree_view.Cursor.Loc.Y < 2 then
 		-- Put the cursor on the ".." if it's above it
-		tree_view.Buf.Cursor.Loc.Y = 2
+		tree_view.Cursor.Loc.Y = 2
 	end
 
 	-- Puts the cursor back in bounds (if it isn't) for safety
-	tree_view.Buf.Cursor:Relocate()
+	tree_view.Cursor:Relocate()
 
 	-- Makes sure the cursor is visible (if it isn't)
 	-- (false) means no callback
 	tree_view:Center(false)
 
 	-- Highlight the current line where the cursor is
-	tree_view.Buf.Cursor:SelectLine()
+	tree_view.Cursor:SelectLine()
 end
 
 -- Simple true/false if scanlist is currently empty
@@ -330,7 +330,7 @@ end
 -- Moves the cursor to the ".." in tree_view
 local function move_cursor_top()
 	-- 2 is the position of the ".."
-	tree_view.Buf.Cursor.Loc.Y = 2
+	tree_view.Cursor.Loc.Y = 2
 
 	-- select the line after moving
 	select_line()
@@ -339,7 +339,7 @@ end
 local function refresh_and_select()
 	-- Save the cursor position before messing with the view..
 	-- because changing contents in the view causes the Y loc to move
-	local last_y = tree_view.Buf.Cursor.Loc.Y
+	local last_y = tree_view.Cursor.Loc.Y
 	-- Actually refresh
 	refresh_view()
 	-- Moves the cursor back to it's original position
@@ -750,7 +750,7 @@ local function create_filedir(filedir_name, make_dir)
 	-- Wrap the below checks so a y=0 doesn't break something
 	if not scanlist_empty and y ~= 0 then
 		-- +1 so it's highlighting the new file/dir
-		last_y = tree_view.Buf.Cursor.Loc.Y + 1
+		last_y = tree_view.Cursor.Loc.Y + 1
 
 		-- Only actually add the object to the list if it's not created on an uncompressed folder
 		if scanlist[y].dirmsg == "+" then
@@ -799,7 +799,7 @@ local function create_filedir(filedir_name, make_dir)
 		-- The scanlist is empty (or cursor is on ".."), so we add on our new file/dir at the bottom
 		scanlist[#scanlist + 1] = new_filedir
 		-- Add current position so it takes into account where we are
-		last_y = #scanlist + tree_view.Buf.Cursor.Loc.Y
+		last_y = #scanlist + tree_view.Cursor.Loc.Y
 	end
 
 	refresh_view()
@@ -901,7 +901,7 @@ function goto_prev_dir()
 			-- If a dir, stop counting
 			if scanlist[i].dirmsg ~= "" then
 				-- Jump to its parent (the ownership)
-				tree_view.Buf.Cursor:UpN(move_count)
+				tree_view.Cursor:UpN(move_count)
 				select_line()
 				break
 			end
@@ -930,7 +930,7 @@ function goto_next_dir()
 			-- If a dir, stop counting
 			if scanlist[i].dirmsg ~= "" then
 				-- Jump to its parent (the ownership)
-				tree_view.Buf.Cursor:DownN(move_count)
+				tree_view.Cursor:DownN(move_count)
 				select_line()
 				break
 			end
@@ -949,7 +949,7 @@ function goto_parent_dir()
 	-- Check if the cursor is even in a valid location for jumping to the owner
 	if cur_y > 0 then
 		-- Jump to its parent (the ownership)
-		tree_view.Buf.Cursor:UpN(cur_y - scanlist[cur_y].owner)
+		tree_view.Cursor:UpN(cur_y - scanlist[cur_y].owner)
 		select_line()
 	end
 end
@@ -959,7 +959,7 @@ function try_open_at_cursor()
 		return
 	end
 
-	try_open_at_y(tree_view.Buf.Cursor.Loc.Y)
+	try_open_at_y(tree_view.Cursor.Loc.Y)
 end
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -983,9 +983,9 @@ end
 -- Move the cursor to the top, but don't allow the action
 local function aftermove_if_tree(view)
 	if view == tree_view then
-		if tree_view.Buf.Cursor.Loc.Y < 2 then
+		if tree_view.Cursor.Loc.Y < 2 then
 			-- If it went past the "..", move back onto it
-			tree_view.Buf.Cursor:DownN(2 - tree_view.Buf.Cursor.Loc.Y)
+			tree_view.Cursor:DownN(2 - tree_view.Cursor.Loc.Y)
 		end
 		select_line()
 	end
@@ -994,7 +994,7 @@ end
 local function clearselection_if_tree(view)
 	if view == tree_view then
 		-- Clear the selection when doing a find, so it doesn't copy the current line
-		tree_view.Buf.Cursor:ResetSelection()
+		tree_view.Cursor:ResetSelection()
 	end
 end
 
@@ -1021,7 +1021,7 @@ end
 -- FIXME: Workaround for the weird 2-index movement on cursordown
 function preCursorDown(view)
 	if view == tree_view then
-		tree_view.Buf.Cursor:Down()
+		tree_view.Cursor:Down()
 		select_line()
 		-- Don't actually go down, as it moves 2 indicies for some reason
 		return false
@@ -1099,7 +1099,7 @@ end
 function preCursorUp(view)
 	if view == tree_view then
 		-- Disallow selecting past the ".." in the tree
-		if tree_view.Buf.Cursor.Loc.Y == 2 then
+		if tree_view.Cursor.Loc.Y == 2 then
 			return false
 		end
 	end
@@ -1136,7 +1136,7 @@ function preIndentSelection(view)
 		tab_pressed = true
 		-- Open the file
 		-- Using tab instead of enter, since enter won't work with Readonly
-		try_open_at_y(tree_view.Buf.Cursor.Loc.Y)
+		try_open_at_y(tree_view.Cursor.Loc.Y)
 		-- Don't actually insert a tab
 		return false
 	end
