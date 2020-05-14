@@ -1317,15 +1317,15 @@ function preSelectAll(view)
 end
 
 -- Open/close the tree view
-config.MakeCommand("tree", "filemanager.toggle_tree", config.NoComplete)
+config.MakeCommand("tree", toggle_tree, config.NoComplete)
 -- Rename the file/dir under the cursor
-config.MakeCommand("rename", "filemanager.rename_at_cursor", config.NoComplete)
+config.MakeCommand("rename", rename_at_cursor, config.NoComplete)
 -- Create a new file
-config.MakeCommand("touch", "filemanager.new_file", config.NoComplete)
+config.MakeCommand("touch", new_file, config.NoComplete)
 -- Create a new dir
-config.MakeCommand("mkdir", "filemanager.new_dir", config.NoComplete)
+config.MakeCommand("mkdir", new_dir, config.NoComplete)
 -- Delete a file/dir, and anything contained in it if it's a dir
-config.MakeCommand("rm", "filemanager.prompt_delete_at_cursor", config.NoComplete)
+config.MakeCommand("rm", prompt_delete_at_cursor, config.NoComplete)
 -- Adds colors to the ".." and any dir's in the tree view via syntax highlighting
 -- TODO: Change it to work with git, based on untracked/changed/added/whatever
 AddRuntimeFile("filemanager", "syntax", "syntax.yaml")
