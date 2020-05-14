@@ -5,7 +5,7 @@ local config = import("micro/config")
 local shell = import("micro/shell")
 local buffer = import("micro/buffer")
 local golib_os = import("os")
-local filepath = import("path/filepath")
+local golib_filepath = import("path/filepath")
 
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
 config.RegisterCommonOption("filemanager", "showdotfiles", true)
@@ -117,8 +117,7 @@ local function get_basename(path)
 		return nil
 	else
 		-- Get Go's path lib for a basename callback
-		local golib_path = import("filepath")
-		return golib_path.Base(path)
+		return golib_filepath.Base(path)
 	end
 end
 
@@ -150,7 +149,7 @@ local function get_scanlist(dir, ownership, indent_n)
 	local files = {}
 
 	local function get_results_object(file_name)
-		local abs_path = filepath.Join(dir, file_name)
+		local abs_path = golib_filepath.Join(dir, file_name)
 		-- Use "+" for dir's, "" for files
 		local dirmsg = (is_dir(abs_path) and "+" or "")
 		return new_listobj(abs_path, dirmsg, ownership, indent_n)
@@ -190,7 +189,7 @@ local function get_scanlist(dir, ownership, indent_n)
 		end
 		if showfile then
 			-- This file is good to show, proceed
-			if folders_first and not is_dir(filepath.Join(dir, filename)) then
+			if folders_first and not is_dir(golib_filepath.Join(dir, filename)) then
 				-- If folders_first and this is a file, add it to (temporary) files
 				files[#files + 1] = get_results_object(filename)
 			else
@@ -234,7 +233,7 @@ local function dirname_and_join(path, join_name)
 	-- The leading path to the dir we're in
 	local leading_path = DirectoryName(path)
 	-- Joins with OS-specific slashes
-	return filepath.Join(leading_path, join_name)
+	return golib_filepath.Join(leading_path, join_name)
 end
 
 -- Hightlights the line when you move the cursor up/down
@@ -699,14 +698,14 @@ local function create_filedir(filedir_name, make_dir)
 		-- If they're inserting on a folder, don't strip its path
 		if scanlist[y].dirmsg ~= "" then
 			-- Join our new file/dir onto the dir
-			filedir_path = filepath.Join(scanlist[y].abspath, filedir_name)
+			filedir_path = golib_filepath.Join(scanlist[y].abspath, filedir_name)
 		else
 			-- The current index is a file, so strip its name and join ours onto it
 			filedir_path = dirname_and_join(scanlist[y].abspath, filedir_name)
 		end
 	else
 		-- if nothing in the list, or cursor is on top of "..", use the current dir
-		filedir_path = filepath.Join(current_dir, filedir_name)
+		filedir_path = golib_filepath.Join(current_dir, filedir_name)
 	end
 
 	-- Check if the name is already taken by a file/dir
