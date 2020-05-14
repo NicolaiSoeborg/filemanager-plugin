@@ -1342,7 +1342,7 @@ if config.GetGlobalOption("filemanager.openonstart") == true then
 		micro.CurPane():NextSplit(false)
 	else
 		-- Log error so they can fix it
-		messenger.AddLog(
+		micro.Log(
 			"Warning: filemanager-openonstart was enabled, but somehow the tree was already open so the option was ignored."
 		)
 	end
