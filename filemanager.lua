@@ -459,12 +459,10 @@ function prompt_delete_at_cursor()
 		return
 	end
 
-	local yes_del, no_del =
-		messenger:YesNoPrompt(
-		"Do you want to delete the " .. (scanlist[y].dirmsg ~= "" and "dir" or "file") .. ' "' .. scanlist[y].abspath .. '"? '
-	)
+	micro.InfoBar():YNPrompt(
+		"Do you want to delete the " .. (scanlist[y].dirmsg ~= "" and "dir" or "file") .. ' "' .. scanlist[y].abspath .. '"? ', function(yes, canceled)
 
-	if yes_del and not no_del then
+		if yes and not canceled then
 		-- Use Go's os.Remove to delete the file
 		-- Delete the target (if its a dir then the children too)
 		local remove_log = golib_os.RemoveAll(scanlist[y].abspath)
@@ -479,6 +477,7 @@ function prompt_delete_at_cursor()
 	else
 		micro.InfoBar():Message("Nothing was deleted")
 	end
+	end)
 end
 
 -- Changes the current dir in the top of the tree..
