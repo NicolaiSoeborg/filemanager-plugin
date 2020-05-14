@@ -284,11 +284,11 @@ local function refresh_view()
 
 	-- Insert the top 3 things that are always there
 	-- Current dir
-	tree_BufPane.Buf:insert(Loc(0, 0), current_dir .. "\n")
+	tree_BufPane.Buf.EventHandler:Insert(Loc(0, 0), current_dir .. "\n")
 	-- An ASCII separator
-	tree_BufPane.Buf:insert(Loc(0, 1), repeat_str("─", tree_BufPane:GetView().Width) .. "\n")
+	tree_BufPane.Buf.EventHandler:Insert(Loc(0, 1), repeat_str("─", tree_BufPane:GetView().Width) .. "\n")
 	-- The ".." and use a newline if there are things in the current dir
-	tree_BufPane.Buf:insert(Loc(0, 2), (#scanlist > 0 and "..\n" or ".."))
+	tree_BufPane.Buf.EventHandler:Insert(Loc(0, 2), (#scanlist > 0 and "..\n" or ".."))
 
 	-- Holds the current basename of the path (purely for display)
 	local display_content
@@ -319,7 +319,7 @@ local function refresh_view()
 
 		-- Insert line-by-line to avoid out-of-bounds on big folders
 		-- +2 so we skip the 0/1/2 positions that hold the top dir/separator/..
-		tree_BufPane.Buf:insert(Loc(0, i + 2), display_content)
+		tree_BufPane.Buf.EventHandler:Insert(Loc(0, i + 2), display_content)
 	end
 
 	-- Resizes all views after messing with ours
