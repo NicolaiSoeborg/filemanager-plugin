@@ -839,7 +839,7 @@ local function open_tree()
 	tree_view.Buf:SetOption("scrollbar", "false")
 
 	-- Fill the scanlist, and then print its contents to tree_view
-	update_current_dir(golib_osGetwd())
+	update_current_dir(golib_os.Getwd())
 end
 
 -- close_tree will close the tree plugin view and release memory.
@@ -1187,12 +1187,12 @@ end
 local precmd_dir
 
 function preCommandMode(view)
-	precmd_dir = golib_osGetwd()
+	precmd_dir = golib_os.Getwd()
 end
 
 -- Update the current dir when using "cd"
 function onCommandMode(view)
-	local new_dir = golib_osGetwd()
+	local new_dir = golib_os.Getwd()
 	-- Only do anything if the tree is open, and they didn't cd to nothing
 	if tree_view ~= nil and new_dir ~= precmd_dir and new_dir ~= current_dir then
 		update_current_dir(new_dir)
