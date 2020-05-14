@@ -4,7 +4,7 @@ local micro = import("micro")
 local config = import("micro/config")
 local shell = import("micro/shell")
 local buffer = import("micro/buffer")
-local os = import("os")
+local golib_os = import("os")
 local filepath = import("path/filepath")
 
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
@@ -70,7 +70,6 @@ end
 -- A check for if a path is a dir
 local function is_dir(path)
 	-- Used for checking if dir
-	local golib_os = import("os")
 	-- Returns a FileInfo on the current file/path
 	local file_info, stat_error = golib_os.Stat(path)
 	-- Wrap in nil check for file/dirs without read permissions
@@ -468,9 +467,8 @@ function prompt_delete_at_cursor()
 
 	if yes_del and not no_del then
 		-- Use Go's os.Remove to delete the file
-		local go_os = import("os")
 		-- Delete the target (if its a dir then the children too)
-		local remove_log = go_os.RemoveAll(scanlist[y].abspath)
+		local remove_log = golib_os.RemoveAll(scanlist[y].abspath)
 		if remove_log == nil then
 			micro.InfoBar():Message("Filemanager deleted: ", scanlist[y].abspath)
 			-- Remove the target (and all nested) from scanlist[y + 1]
@@ -614,14 +612,13 @@ end
 
 -- Stat a path to check if it exists, returning true/false
 local function path_exists(path)
-	local go_os = import("os")
 	-- Stat the file/dir path we created
 	-- file_stat should be non-nil, and stat_err should be nil on success
-	local file_stat, stat_err = go_os.Stat(path)
+	local file_stat, stat_err = golib_os.Stat(path)
 	-- Check if what we tried to create exists
 	if stat_err ~= nil then
 		-- true/false if the file/dir exists
-		return go_os.IsExist(stat_err)
+		return golib_os.IsExist(stat_err)
 	elseif file_stat ~= nil then
 		-- Assume it exists if no errors
 		return true
@@ -657,7 +654,6 @@ function rename_at_cursor(new_name)
 	-- Join the path into their supplied rename, so that we have an absolute path
 	local new_path = dirname_and_join(old_path, new_name)
 	-- Use Go's os package for renaming the file/dir
-	local golib_os = import("os")
 	-- Actually rename the file
 	local log_out = golib_os.Rename(old_path, new_path)
 	-- Output the log, if any, of the rename
@@ -720,7 +716,6 @@ local function create_filedir(filedir_name, make_dir)
 	end
 
 	-- Use Go's os package for creating the files
-	local golib_os = import("os")
 	-- Create the dir or file
 	if make_dir then
 		-- Creates the dir
