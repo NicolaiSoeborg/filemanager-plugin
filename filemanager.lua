@@ -827,17 +827,17 @@ local function open_tree()
 	tree_view.Type.Readonly = true
 	tree_view.Type.Scratch = true
 
-	-- Set the various display settings, but only on our view (by using SetLocalOption instead of SetOption)
+	-- Set the various display settings, but only on our view by using SetOption on the treevew buffer
 	-- NOTE: Micro requires the true/false to be a string
 	-- Softwrap long strings (the file/dir paths)
-	SetLocalOption("softwrap", "true", tree_view)
+	tree_view.Buf:SetOption("softwrap", "true")
 	-- No line numbering
-	SetLocalOption("ruler", "false", tree_view)
+	tree_view.Buf:SetOption("ruler", "false")
 	-- Is this needed with new non-savable settings from being "vtLog"?
-	SetLocalOption("autosave", "false", tree_view)
+	tree_view.Buf:SetOption("autosave", "false")
 	-- Don't show the statusline to differentiate the view from normal views
-	SetLocalOption("statusline", "false", tree_view)
-	SetLocalOption("scrollbar", "false", tree_view)
+	tree_view.Buf:SetOption("statusline", "false")
+	tree_view.Buf:SetOption("scrollbar", "false")
 
 	-- Fill the scanlist, and then print its contents to tree_view
 	update_current_dir(os.Getwd())
