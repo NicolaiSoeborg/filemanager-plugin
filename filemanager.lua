@@ -25,7 +25,8 @@ config.RegisterCommonOption("filemanager", "openonstart", false)
 
 -- Clear out all stuff in Micro's messenger
 local function clear_messenger()
-	micro.InfoBar:Reset()
+	-- TODO find below functions in micro v2 api
+	--micro.InfoBar:Reset()
 	--messenger:Clear()
 end
 
