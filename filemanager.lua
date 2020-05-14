@@ -275,7 +275,7 @@ local function refresh_view()
 
 	-- If it's less than 30, just use 30 for width. Don't want it too small
 	if tree_BufPane:GetView().Width < 30 then
-		tree_BufPane.ResizePane(30)
+		tree_BufPane:ResizePane(30)
 	end
 
 	-- Delete everything in the view/buffer
@@ -442,7 +442,7 @@ local function compress_target(y, delete_y)
 
 	if tree_BufPane:GetView().Width > (30 + highest_visible_indent) then
 		-- Shave off some width
-		tree_BufPane.ResizePane(30 + highest_visible_indent)
+		tree_BufPane:ResizePane(30 + highest_visible_indent)
 	end
 
 	refresh_and_select()
@@ -486,7 +486,7 @@ local function update_current_dir(path)
 	-- Clear the highest since this is a full refresh
 	highest_visible_indent = 0
 	-- Set the width back to 30
-	tree_BufPane.ResizePane(30)
+	tree_BufPane:ResizePane(30)
 	-- Update the current dir to the new path
 	current_dir = path
 
@@ -819,7 +819,7 @@ local function open_tree()
 	tree_BufPane = micro.CurPane()
 
 	-- Set the width of tree_BufPane to 30% & lock it
-	tree_BufPane.ResizePane(30)
+	tree_BufPane:ResizePane(30)
 	tree_BufPane.LockWidth = true
 	-- Set the type to unsavable (A "vtScratch" ViewType)
 	tree_BufPane.Type.Kind = 2
