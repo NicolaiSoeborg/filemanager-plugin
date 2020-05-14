@@ -820,11 +820,11 @@ local function open_tree()
 
 	-- Set the width of tree_BufPane to 30% & lock it
 	tree_BufPane:ResizePane(30)
-	tree_BufPane.LockWidth = true
+	-- tree_BufPane.LockWidth = true
 	-- Set the type to unsavable (A "vtScratch" ViewType)
-	tree_BufPane.Type.Kind = 2
-	tree_BufPane.Type.Readonly = true
-	tree_BufPane.Type.Scratch = true
+	tree_BufPane.Buf.Type.Kind = buffer.BTLog
+	tree_BufPane.Buf.Type.Readonly = true
+	tree_BufPane.Buf.Type.Scratch = true
 
 	-- Set the various display settings, but only on our view by using SetOption on the treevew buffer
 	-- NOTE: Micro requires the true/false to be a string
