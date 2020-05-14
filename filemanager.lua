@@ -540,7 +540,7 @@ local function try_open_at_y(y)
 			-- If it's a file, then open it
 			micro.InfoBar():Message("Filemanager opened ", scanlist[y].abspath)
 			-- Opens the absolute path in new vertical view
-			micro.CurPane():VSplitIndex(buffer.NewBufferFromFile(scanlist[y].abspath), 1)
+			micro.CurPane():VSplitIndex(buffer.NewBufferFromFile(scanlist[y].abspath), true)
 			-- Resizes all views after opening a file
 			tabs[curTab + 1]:Resize()
 		end
@@ -814,7 +814,7 @@ end
 -- open_tree setup's the view
 local function open_tree()
 	-- Open a new Vsplit (on the very left)
-	micro.CurPane():VSplitIndex(buffer.NewBuffer("", "filemanager"), 0)
+	micro.CurPane():VSplitIndex(buffer.NewBuffer("", "filemanager"), false)
 	-- Save the new view so we can access it later
 	tree_view = micro.CurPane()
 
