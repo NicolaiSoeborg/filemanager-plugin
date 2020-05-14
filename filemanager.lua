@@ -1316,6 +1316,7 @@ function preSelectAll(view)
 	return false_if_tree(view)
 end
 
+function init()
 -- Open/close the tree view
 config.MakeCommand("tree", toggle_tree, config.NoComplete)
 -- Rename the file/dir under the cursor
@@ -1328,7 +1329,7 @@ config.MakeCommand("mkdir", new_dir, config.NoComplete)
 config.MakeCommand("rm", prompt_delete_at_cursor, config.NoComplete)
 -- Adds colors to the ".." and any dir's in the tree view via syntax highlighting
 -- TODO: Change it to work with git, based on untracked/changed/added/whatever
-AddRuntimeFile("filemanager", "syntax", "syntax.yaml")
+config.AddRuntimeFile("filemanager", config.RTSyntax, "syntax.yaml")
 
 -- NOTE: This must be below the syntax load command or coloring won't work
 -- Just auto-open if the option is enabled
@@ -1346,4 +1347,5 @@ if config.GetGlobalOption("filemanager.openonstart") == true then
 			"Warning: filemanager-openonstart was enabled, but somehow the tree was already open so the option was ignored."
 		)
 	end
+end
 end
