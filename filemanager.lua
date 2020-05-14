@@ -231,7 +231,7 @@ end
 -- Joins the target dir's leading path to the passed name
 local function dirname_and_join(path, join_name)
 	-- The leading path to the dir we're in
-	local leading_path = DirectoryName(path)
+	local leading_path = golib_filepath.Dir(path)
 	-- Joins with OS-specific slashes
 	return golib_filepath.Join(leading_path, join_name)
 end
@@ -512,10 +512,10 @@ end
 -- (Tries to) go back one "step" from the current directory
 local function go_back_dir()
 	-- Use Micro's dirname to get everything but the current dir's path
-	local one_back_dir = DirectoryName(current_dir)
+	local one_back_dir = golib_filepath.Dir(current_dir)
 	-- Try opening, assuming they aren't at "root", by checking if it matches last dir
 	if one_back_dir ~= current_dir then
-		-- If DirectoryName returns different, then they can move back..
+		-- If golib_filepath.Dir returns different, then they can move back..
 		-- so we update the current dir and refresh
 		update_current_dir(one_back_dir)
 	end
