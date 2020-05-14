@@ -25,8 +25,8 @@ config.RegisterCommonOption("filemanager", "openonstart", false)
 
 -- Clear out all stuff in Micro's messenger
 local function clear_messenger()
-	messenger:Reset()
-	messenger:Clear()
+	micro.InfoBar:Reset()
+	--messenger:Clear()
 end
 
 -- Holds the micro.CurPane() we're manipulating
