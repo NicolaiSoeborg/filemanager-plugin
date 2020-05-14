@@ -280,7 +280,7 @@ local function refresh_view()
 	end
 
 	-- Delete everything in the view/buffer
-	tree_BufPane.Buf:remove(tree_BufPane.Buf:Start(), tree_BufPane.Buf:End())
+	tree_BufPane.Buf.EventHandler:Remove(tree_BufPane.Buf:Start(), tree_BufPane.Buf:End())
 
 	-- Insert the top 3 things that are always there
 	-- Current dir
