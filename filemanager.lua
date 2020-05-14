@@ -32,7 +32,7 @@ end
 -- Holds the micro.CurPane() we're manipulating
 local tree_view = nil
 -- Keeps track of the current working directory
-local current_dir = golib_osGetwd()
+local current_dir = golib_os.Getwd()
 -- Keep track of current highest visible indent to resize width appropriately
 local highest_visible_indent = 0
 -- Holds a table of paths -- objects from new_listobj() calls
