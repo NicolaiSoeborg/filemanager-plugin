@@ -145,7 +145,7 @@ local function get_scanlist(dir, ownership, indent_n)
 		return nil
 	end
 
-	-- The list of files to be returned (and eventually put in the view)
+	-- The list of files to be returned (and eventually put in the bufpane)
 	local results = {}
 	local files = {}
 
@@ -279,7 +279,7 @@ local function refresh_view()
 		tree_BufPane:ResizePane(30)
 	end
 
-	-- Delete everything in the view/buffer
+	-- Delete everything in the bufpane/buffer
 	tree_BufPane.Buf.EventHandler:Remove(tree_BufPane.Buf:Start(), tree_BufPane.Buf:End())
 
 	-- Insert the top 3 things that are always there
@@ -816,7 +816,7 @@ end
 local function open_tree()
 	-- Open a new Vsplit (on the very left)
 	micro.CurPane():VSplitIndex(buffer.NewBuffer("", "filemanager"), false)
-	-- Save the new view so we can access it later
+	-- Save the new bufpane so we can access it later
 	tree_BufPane = micro.CurPane()
 
 	-- Set the width of tree_BufPane to 30% & lock it
@@ -827,7 +827,7 @@ local function open_tree()
 	tree_BufPane.Buf.Type.Readonly = true
 	tree_BufPane.Buf.Type.Scratch = true
 
-	-- Set the various display settings, but only on our view by using SetOption on the treevew buffer
+	-- Set the various display settings, but only on our bufpane by using SetOption on the treevew buffer
 	-- NOTE: Micro requires the true/false to be a string
 	-- Softwrap long strings (the file/dir paths)
 	tree_BufPane.Buf:SetOption("softwrap", "true")
@@ -961,22 +961,22 @@ end
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- Used to fail certain actions that we shouldn't allow on the tree_BufPane
-local function false_if_tree(view)
-	if view == tree_BufPane then
+local function false_if_tree(bufpane)
+	if bufpane == tree_BufPane then
 		return false
 	end
 end
 
 -- Select the line at the cursor
-local function selectline_if_tree(view)
-	if view == tree_BufPane then
+local function selectline_if_tree(bufpane)
+	if bufpane == tree_BufPane then
 		select_line()
 	end
 end
 
 -- Move the cursor to the top, but don't allow the action
-local function aftermove_if_tree(view)
-	if view == tree_BufPane then
+local function aftermove_if_tree(bufpane)
+	if bufpane == tree_BufPane then
 		if tree_BufPane.Cursor.Loc.Y < 2 then
 			-- If it went past the "..", move back onto it
 			tree_BufPane.Cursor:DownN(2 - tree_BufPane.Cursor.Loc.Y)
@@ -985,8 +985,8 @@ local function aftermove_if_tree(view)
 	end
 end
 
-local function clearselection_if_tree(view)
-	if view == tree_BufPane then
+local function clearselection_if_tree(bufpane)
+	if bufpane == tree_BufPane then
 		-- Clear the selection when doing a find, so it doesn't copy the current line
 		tree_BufPane.Cursor:ResetSelection()
 	end
@@ -998,8 +998,8 @@ end
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- Close current
-function preQuit(view)
-	if view == tree_BufPane then
+function preQuit(bufpane)
+	if bufpane == tree_BufPane then
 		-- A fake quit function
 		close_tree()
 		-- Don't actually "quit", otherwise it closes everything without saving for some reason
@@ -1008,13 +1008,13 @@ function preQuit(view)
 end
 
 -- Close all
-function preQuitAll(view)
+function preQuitAll(bufpane)
 	close_tree()
 end
 
 -- FIXME: Workaround for the weird 2-index movement on cursordown
-function preCursorDown(view)
-	if view == tree_BufPane then
+function preCursorDown(bufpane)
+	if bufpane == tree_BufPane then
 		tree_BufPane.Cursor:Down()
 		select_line()
 		-- Don't actually go down, as it moves 2 indicies for some reason
@@ -1023,14 +1023,14 @@ function preCursorDown(view)
 end
 
 -- Up
-function onCursorUp(view)
-	selectline_if_tree(view)
+function onCursorUp(bufpane)
+	selectline_if_tree(bufpane)
 end
 
 -- Alt-Shift-{
 -- Go to target's parent directory (if exists)
-function preParagraphPrevious(view)
-	if view == tree_BufPane then
+function preParagraphPrevious(bufpane)
+	if bufpane == tree_BufPane then
 		goto_prev_dir()
 		-- Don't actually do the action
 		return false
@@ -1039,8 +1039,8 @@ end
 
 -- Alt-Shift-}
 -- Go to next dir (if exists)
-function preParagraphNext(view)
-	if view == tree_BufPane then
+function preParagraphNext(bufpane)
+	if bufpane == tree_BufPane then
 		goto_next_dir()
 		-- Don't actually do the action
 		return false
@@ -1048,44 +1048,44 @@ function preParagraphNext(view)
 end
 
 -- NewLine
-function preInsertNewline(view)
-	if view == tree_view then
+function preInsertNewline(bufpane)
+	if bufpane == tree_view then
 		return false
 	end
 	return true
 end
 
 -- PageUp
-function onCursorPageUp(view)
-	aftermove_if_tree(view)
+function onCursorPageUp(bufpane)
+	aftermove_if_tree(bufpane)
 end
 
 -- Ctrl-Up
-function onCursorStart(view)
-	aftermove_if_tree(view)
+function onCursorStart(bufpane)
+	aftermove_if_tree(bufpane)
 end
 
 -- PageDown
-function onCursorPageDown(view)
-	selectline_if_tree(view)
+function onCursorPageDown(bufpane)
+	selectline_if_tree(bufpane)
 end
 
 -- Ctrl-Down
-function onCursorEnd(view)
-	selectline_if_tree(view)
+function onCursorEnd(bufpane)
+	selectline_if_tree(bufpane)
 end
 
-function onNextSplit(view)
-	selectline_if_tree(view)
+function onNextSplit(bufpane)
+	selectline_if_tree(bufpane)
 end
 
-function onPreviousSplit(view)
-	selectline_if_tree(view)
+function onPreviousSplit(bufpane)
+	selectline_if_tree(bufpane)
 end
 
 -- On click, open at the click's y
-function preMousePress(view, event)
-	if view == tree_BufPane then
+function preMousePress(bufpane, event)
+	if bufpane == tree_BufPane then
 		local x, y = event:Position()
 		-- Fixes the y because softwrap messes with it
 		local new_x, new_y = tree_BufPane:GetMouseClickLocation(x, y)
@@ -1098,8 +1098,8 @@ function preMousePress(view, event)
 end
 
 -- Up
-function preCursorUp(view)
-	if view == tree_BufPane then
+function preCursorUp(bufpane)
+	if bufpane == tree_BufPane then
 		-- Disallow selecting past the ".." in the tree
 		if tree_BufPane.Cursor.Loc.Y == 2 then
 			return false
@@ -1108,8 +1108,8 @@ function preCursorUp(view)
 end
 
 -- Left
-function preCursorLeft(view)
-	if view == tree_BufPane then
+function preCursorLeft(bufpane)
+	if bufpane == tree_BufPane then
 		-- +1 because of Go's zero-based index
 		-- False to not delete y
 		compress_target(get_safe_y(), false)
@@ -1119,8 +1119,8 @@ function preCursorLeft(view)
 end
 
 -- Right
-function preCursorRight(view)
-	if view == tree_BufPane then
+function preCursorRight(bufpane)
+	if bufpane == tree_BufPane then
 		-- +1 because of Go's zero-based index
 		uncompress_target(get_safe_y())
 		-- Don't actually move the cursor, as it messes with selection
@@ -1133,8 +1133,8 @@ end
 local tab_pressed = false
 
 -- Tab
-function preIndentSelection(view)
-	if view == tree_BufPane then
+function preIndentSelection(bufpane)
+	if bufpane == tree_BufPane then
 		tab_pressed = true
 		-- Open the file
 		-- Using tab instead of enter, since enter won't work with Readonly
@@ -1146,22 +1146,22 @@ end
 
 -- Workaround for tab getting inserted into opened files
 -- Ref https://github.com/zyedidia/micro/issues/992
-function preInsertTab(view)
+function preInsertTab(bufpane)
 	if tab_pressed then
 		tab_pressed = false
 		return false
 	end
 end
 -- CtrlL
-function onJumpLine(view)
+function onJumpLine(bufpane)
 	-- Highlight the line after jumping to it
 	-- Also moves you to index 3 (2 in zero-base) if you went to the first 2 lines
-	aftermove_if_tree(view)
+	aftermove_if_tree(bufpane)
 end
 
 -- ShiftUp
-function preSelectUp(view)
-	if view == tree_BufPane then
+function preSelectUp(bufpane)
+	if bufpane == tree_BufPane then
 		-- Go to the file/dir's parent dir (if any)
 		goto_parent_dir()
 		-- Don't actually selectup
@@ -1170,37 +1170,37 @@ function preSelectUp(view)
 end
 
 -- CtrlF
-function preFind(view)
+function preFind(bufpane)
 	-- Since something is always selected, clear before a find
 	-- Prevents copying the selection into the find input
-	clearselection_if_tree(view)
+	clearselection_if_tree(bufpane)
 end
 
 -- FIXME: doesn't work for whatever reason
-function onFind(view)
+function onFind(bufpane)
 	-- Select the whole line after a find, instead of just the input txt
-	selectline_if_tree(view)
+	selectline_if_tree(bufpane)
 end
 
 -- CtrlN after CtrlF
-function onFindNext(view)
-	selectline_if_tree(view)
+function onFindNext(bufpane)
+	selectline_if_tree(bufpane)
 end
 
 -- CtrlP after CtrlF
-function onFindPrevious(view)
-	selectline_if_tree(view)
+function onFindPrevious(bufpane)
+	selectline_if_tree(bufpane)
 end
 
 -- NOTE: This is a workaround for "cd" not having its own callback
 local precmd_dir
 
-function preCommandMode(view)
+function preCommandMode(bufpane)
 	precmd_dir = golib_os.Getwd()
 end
 
 -- Update the current dir when using "cd"
-function onCommandMode(view)
+function onCommandMode(bufpane)
 	local new_dir = golib_os.Getwd()
 	-- Only do anything if the tree is open, and they didn't cd to nothing
 	if tree_BufPane ~= nil and new_dir ~= precmd_dir and new_dir ~= current_dir then
@@ -1213,128 +1213,128 @@ end
 -- Some of these need to be removed (read-only makes some useless)
 ------------------------------------------------------------------
 
-function preStartOfText(view)
-	return false_if_tree(view)
+function preStartOfText(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preStartOfLine(view)
-	return false_if_tree(view)
+function preStartOfLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preEndOfLine(view)
-	return false_if_tree(view)
+function preEndOfLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preMoveLinesDown(view)
-	return false_if_tree(view)
+function preMoveLinesDown(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preMoveLinesUp(view)
-	return false_if_tree(view)
+function preMoveLinesUp(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preWordRight(view)
-	return false_if_tree(view)
+function preWordRight(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preWordLeft(view)
-	return false_if_tree(view)
+function preWordLeft(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectDown(view)
-	return false_if_tree(view)
+function preSelectDown(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectLeft(view)
-	return false_if_tree(view)
+function preSelectLeft(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectRight(view)
-	return false_if_tree(view)
+function preSelectRight(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectToStartOfText(view)
-	return false_if_tree(view)
+function preSelectToStartOfText(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectWordRight(view)
-	return false_if_tree(view)
+function preSelectWordRight(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectWordLeft(view)
-	return false_if_tree(view)
+function preSelectWordLeft(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectToStartOfLine(view)
-	return false_if_tree(view)
+function preSelectToStartOfLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectToEndOfLine(view)
-	return false_if_tree(view)
+function preSelectToEndOfLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectToStart(view)
-	return false_if_tree(view)
+function preSelectToStart(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectToEnd(view)
-	return false_if_tree(view)
+function preSelectToEnd(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preDeleteWordLeft(view)
-	return false_if_tree(view)
+function preDeleteWordLeft(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preDeleteWordRight(view)
-	return false_if_tree(view)
+function preDeleteWordRight(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preOutdentSelection(view)
-	return false_if_tree(view)
+function preOutdentSelection(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preOutdentLine(view)
-	return false_if_tree(view)
+function preOutdentLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSave(view)
-	return false_if_tree(view)
+function preSave(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preCut(view)
-	return false_if_tree(view)
+function preCut(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preCutLine(view)
-	return false_if_tree(view)
+function preCutLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preDuplicateLine(view)
-	return false_if_tree(view)
+function preDuplicateLine(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function prePaste(view)
-	return false_if_tree(view)
+function prePaste(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function prePastePrimary(view)
-	return false_if_tree(view)
+function prePastePrimary(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preMouseMultiCursor(view)
-	return false_if_tree(view)
+function preMouseMultiCursor(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSpawnMultiCursor(view)
-	return false_if_tree(view)
+function preSpawnMultiCursor(bufpane)
+	return false_if_tree(bufpane)
 end
 
-function preSelectAll(view)
-	return false_if_tree(view)
+function preSelectAll(bufpane)
+	return false_if_tree(bufpane)
 end
 
 function init()
--- Open/close the tree view
+-- Open/close the tree bufpane
 config.MakeCommand("tree", toggle_tree, config.NoComplete)
 -- Rename the file/dir under the cursor
 config.MakeCommand("rename", rename_at_cursor, config.NoComplete)
