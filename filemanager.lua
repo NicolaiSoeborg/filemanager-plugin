@@ -1347,6 +1347,8 @@ config.MakeCommand("rm", prompt_delete_at_cursor, config.NoComplete)
 -- Adds colors to the ".." and any dir's in the tree view via syntax highlighting
 -- TODO: Change it to work with git, based on untracked/changed/added/whatever
 config.AddRuntimeFile("filemanager", config.RTSyntax, "syntax.yaml")
+-- Help file for this plugin can be viewed in micro editor
+config.AddRuntimeFile("filemanager", config.RTHelp, "help/filemanager-plugin.md")
 
 -- NOTE: This must be below the syntax load command or coloring won't work
 -- Just auto-open if the option is enabled
