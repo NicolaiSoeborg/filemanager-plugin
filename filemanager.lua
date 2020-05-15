@@ -323,7 +323,7 @@ local function refresh_view()
 	end
 
 	-- Resizes all views after messing with ours
-	tabs[curTab + 1]:Resize()
+	tree_BufPane:Tab():Resize()
 end
 
 -- Moves the cursor to the ".." in tree_BufPane
@@ -543,7 +543,7 @@ local function try_open_at_y(y)
 			-- Opens the absolute path in new vertical view
 			micro.CurPane():VSplitIndex(buffer.NewBufferFromFile(scanlist[y].abspath), true)
 			-- Resizes all views after opening a file
-			tabs[curTab + 1]:Resize()
+			tree_BufPane:Tab():Resize()
 		end
 	else
 		micro.InfoBar():Error("Can't open that")
