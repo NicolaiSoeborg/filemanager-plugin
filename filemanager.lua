@@ -1213,6 +1213,10 @@ end
 -- Some of these need to be removed (read-only makes some useless)
 ------------------------------------------------------------------
 
+function preStartOfText(view)
+	return false_if_tree(view)
+end
+
 function preStartOfLine(view)
 	return false_if_tree(view)
 end
