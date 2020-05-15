@@ -627,7 +627,10 @@ end
 
 -- Prompts for a new name, then renames the file/dir at the cursor's position
 -- Not local so Micro can use it
-function rename_at_cursor(new_name)
+-- @param bufpane BufPane object passed in from micro editor
+-- @param args string array []
+function rename_at_cursor(bufpane, args)
+	local new_name = parse_args(args)
 	if micro.CurPane() ~= tree_BufPane then
 		micro.InfoBar():Message("Rename only works with the cursor in the tree!")
 		return
@@ -674,6 +677,9 @@ function rename_at_cursor(new_name)
 end
 
 -- Prompts the user for the file/dir name, then creates the file/dir using Go's os package
+-- @param filedir_name string
+-- @param make_dir bool
+-- @return nothing
 local function create_filedir(filedir_name, make_dir)
 	if micro.CurPane() ~= tree_BufPane then
 		micro.InfoBar():Message("You can't create a file/dir if your cursor isn't in the tree!")
@@ -800,14 +806,33 @@ local function create_filedir(filedir_name, make_dir)
 	select_line(last_y)
 end
 
+-- parse_args will check if the passed in string array is empty
+-- @param args string array[]
+-- @return nil or string [nil if the string array is empty]
+function parse_args(args)
+	local return_string = nil
+	if #args == 0 then
+		-- args is empty
+	else
+	return_string = args[1]
+	end
+	return return_string
+end
+
 -- Triggered with "touch filename"
-function new_file(input_name)
+-- @param bufpane current BufPane object
+-- @param args string array[]
+function new_file(bufpane, args)
+	local input_name = parse_args(args)
 	-- False because not a dir
 	create_filedir(input_name, false)
 end
 
 -- Triggered with "mkdir dirname"
-function new_dir(input_name)
+-- @param bufpane current BufPane object
+-- @param args string array []
+function new_dir(bufpane, args)
+	local input_name = parse_args(args)
 	-- True because dir
 	create_filedir(input_name, true)
 end
