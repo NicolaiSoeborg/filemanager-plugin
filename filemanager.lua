@@ -1253,6 +1253,10 @@ function preSelectRight(view)
 	return false_if_tree(view)
 end
 
+function preSelectToStartOfText(view)
+	return false_if_tree(view)
+end
+
 function preSelectWordRight(view)
 	return false_if_tree(view)
 end
