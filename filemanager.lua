@@ -1047,6 +1047,14 @@ function preParagraphNext(view)
 	end
 end
 
+-- NewLine
+function preInsertNewline(view)
+	if view == tree_view then
+		return false
+	end
+	return true
+end
+
 -- PageUp
 function onCursorPageUp(view)
 	aftermove_if_tree(view)
