@@ -256,7 +256,7 @@ local function select_line(last_y)
 
 	-- Makes sure the cursor is visible (if it isn't)
 	-- (false) means no callback
-	tree_BufPane:Center(false)
+	tree_BufPane:Center()
 
 	-- Highlight the current line where the cursor is
 	tree_BufPane.Cursor:SelectLine()
@@ -846,7 +846,7 @@ end
 -- close_tree will close the tree plugin view and release memory.
 local function close_tree()
 	if tree_BufPane ~= nil then
-		tree_BufPane:Quit(false)
+		tree_BufPane:Quit()
 		tree_BufPane = nil
 		clear_messenger()
 	end
@@ -1357,7 +1357,7 @@ if config.GetGlobalOption("filemanager.openonstart") == true then
 		open_tree()
 		-- Puts the cursor back in the empty view that initially spawns
 		-- This is so the cursor isn't sitting in the tree view at startup
-		micro.CurPane():NextSplit(false)
+		micro.CurPane():NextSplit()
 	else
 		-- Log error so they can fix it
 		micro.Log(
