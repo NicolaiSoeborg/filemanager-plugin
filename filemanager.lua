@@ -809,7 +809,7 @@ end
 -- parse_args will check if the passed in string array is empty
 -- @param args string array[]
 -- @return nil or string [nil if the string array is empty]
-function parse_args(args)
+local function parse_args(args)
 	local return_string = nil
 	if #args == 0 then
 		-- args is empty
@@ -820,6 +820,7 @@ function parse_args(args)
 end
 
 -- Triggered with "touch filename"
+-- Not local so Micro can use it
 -- @param bufpane current BufPane object
 -- @param args string array[]
 function new_file(bufpane, args)
@@ -829,6 +830,7 @@ function new_file(bufpane, args)
 end
 
 -- Triggered with "mkdir dirname"
+-- Not local so Micro can use it
 -- @param bufpane current BufPane object
 -- @param args string array []
 function new_dir(bufpane, args)
@@ -878,6 +880,7 @@ local function close_tree()
 end
 
 -- toggle_tree will toggle the tree view visible (create) and hide (delete).
+-- Not local so Micro can use it
 function toggle_tree()
 	if tree_BufPane == nil then
 		open_tree()
@@ -891,12 +894,14 @@ end
 -- Some are used in callbacks as well
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+-- Not local so it can be keybound
 function uncompress_at_cursor()
 	if micro.CurPane() == tree_BufPane then
 		uncompress_target(get_safe_y())
 	end
 end
 
+-- Not local so it can be keybound
 function compress_at_cursor()
 	if micro.CurPane() == tree_BufPane then
 		-- False to not delete y
@@ -905,7 +910,7 @@ function compress_at_cursor()
 end
 
 -- Goes up 1 visible directory (if any)
--- Not local so it can be bound
+-- Not local so it can be keybound
 function goto_prev_dir()
 	if micro.CurPane() ~= tree_BufPane or scanlist_is_empty() then
 		return
@@ -929,7 +934,7 @@ function goto_prev_dir()
 end
 
 -- Goes down 1 visible directory (if any)
--- Not local so it can be bound
+-- Not local so it can be keybound
 function goto_next_dir()
 	if micro.CurPane() ~= tree_BufPane or scanlist_is_empty() then
 		return
@@ -973,6 +978,7 @@ function goto_parent_dir()
 	end
 end
 
+-- Not local so it can be keybound
 function try_open_at_cursor()
 	if micro.CurPane() ~= tree_BufPane or scanlist_is_empty() then
 		return
