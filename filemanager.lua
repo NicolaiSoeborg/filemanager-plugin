@@ -6,6 +6,7 @@ local shell = import("micro/shell")
 local buffer = import("micro/buffer")
 local golib_os = import("os")
 local golib_filepath = import("path/filepath")
+local golib_ioutil = import("ioutil")
 
 -- Let the user disable showing of dotfiles like ".editorconfig" or ".DS_STORE"
 config.RegisterCommonOption("filemanager", "showdotfiles", true)
@@ -135,7 +136,6 @@ end
 -- Structures the output of the scanned directory content to be used in the scanlist table
 -- This is useful for both initial creation of the tree, and when nesting with uncompress_target()
 local function get_scanlist(dir, ownership, indent_n)
-	local golib_ioutil = import("ioutil")
 	-- Gets a list of all the files in the current dir
 	local dir_scan, scan_error = golib_ioutil.ReadDir(dir)
 
