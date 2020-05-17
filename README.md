@@ -51,17 +51,25 @@ If you want to [keybind](https://github.com/zyedidia/micro/blob/master/runtime/h
 
 | Command  | Keybinding(s)              | What it does                                                                                | API for `bindings.json`               |
 | :------- | :------------------------- | :------------------------------------------------------------------------------------------ | :------------------------------------ |
-| `tree`   | -                          | Open/close the tree                                                                         | `filemanager.toggle_tree`             |
-| -        | <kbd>Tab</kbd> & MouseLeft | Open a file, or go into the directory. Goes back a dir if on `..`                           | `filemanager.try_open_at_cursor`      |
-| -        | <kbd>→</kbd>               | Expand directory in tree listing                                                            | `filemanager.uncompress_at_cursor`    |
-| -        | <kbd>←</kbd>               | Collapse directory listing                                                                  | `filemanager.compress_at_cursor`      |
-| -        | <kbd>Shift ⬆</kbd>         | Go to the target's parent directory                                                         | `filemanager.goto_parent_dir`         |
-| -        | <kbd>Alt Shift {</kbd>     | Jump to the previous directory in the view                                                  | `filemanager.goto_next_dir`           |
-| -        | <kbd>Alt Shift }</kbd>     | Jump to the next directory in the view                                                      | `filemanager.goto_prev_dir`           |
-| `rm`     | -                          | Prompt to delete the target file/directory your cursor is on                                | `filemanager.prompt_delete_at_cursor` |
-| `rename` | -                          | Rename the file/directory your cursor is on, using the passed name                          | `filemanager.rename_at_cursor`        |
-| `touch`  | -                          | Make a new file under/into the file/directory your cursor is on, using the passed name      | `filemanager.new_file`                |
-| `mkdir`  | -                          | Make a new directory under/into the file/directory your cursor is on, using the passed name | `filemanager.new_dir`                 |
+| `tree`   | -                          | Open/close the tree                                                                         | `lua:filemanager.toggle_tree`             |
+| -        | <kbd>Tab</kbd> & MouseLeft | Open a file, or go into the directory. Goes back a dir if on `..`                           | `lua:filemanager.try_open_at_cursor`      |
+| -        | <kbd>→</kbd>               | Expand directory in tree listing                                                            | `lua:filemanager.uncompress_at_cursor`    |
+| -        | <kbd>←</kbd>               | Collapse directory listing                                                                  | `lua:filemanager.compress_at_cursor`      |
+| -        | <kbd>Shift ⬆</kbd>         | Go to the target's parent directory                                                         | `lua:filemanager.goto_parent_dir`         |
+| -        | <kbd>Alt Shift {</kbd>     | Jump to the previous directory in the view                                                  | `lua:filemanager.goto_next_dir`           |
+| -        | <kbd>Alt Shift }</kbd>     | Jump to the next directory in the view                                                      | `lua:filemanager.goto_prev_dir`           |
+| `rm`     | -                          | Prompt to delete the target file/directory your cursor is on                                | `lua:filemanager.prompt_delete_at_cursor` |
+| `rename` | -                          | Rename the file/directory your cursor is on, using the passed name                          | `lua:filemanager.rename_at_cursor`        |
+| `touch`  | -                          | Make a new file under/into the file/directory your cursor is on, using the passed name      | `lua:filemanager.new_file`                |
+| `mkdir`  | -                          | Make a new directory under/into the file/directory your cursor is on, using the passed name | `lua:filemanager.new_dir`                 |
+
+Example of keybinding <kbd>F7</kbd> to `lua:filemanager.toggle_tree` below, in the bindings.json file
+
+```json
+{
+   "F7": "lua:filemanager.toggle_tree"
+}
+```
 
 #### Notes
 
