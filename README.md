@@ -4,18 +4,7 @@ A simple plugin that allows for easy navigation of a file tree.
 
 ![Example picture](./example.jpg?raw=true "Example")
 
-### Micro Version 1
-
 **Installation:** run `plugin install filemanager` and restart Micro.
-
-### Micro Version 2
-
-To get the latest version run the commands in the terminal.
-
-```bash
-mkdir -p ~/.config/micro/plug
-git clone https://github.com/NicolaiSoeborg/filemanager-plugin.git ~/.config/micro/plug/filemanager
-```
 
 ## Help in micro editor
 
@@ -49,8 +38,8 @@ The keybindings below are the equivalent to Micro's defaults, and not actually s
 
 If you want to [keybind](https://github.com/zyedidia/micro/blob/master/runtime/help/keybindings.md#rebinding-keys) any of the operations/commands, bind to the labeled API in the table below.
 
-| Command  | Keybinding(s)              | What it does                                                                                | API for `bindings.json`               |
-| :------- | :------------------------- | :------------------------------------------------------------------------------------------ | :------------------------------------ |
+| Command  | Keybinding(s)              | What it does                                                                                | API for `bindings.json`                   |
+| :------- | :------------------------- | :------------------------------------------------------------------------------------------ | :---------------------------------------- |
 | `tree`   | -                          | Open/close the tree                                                                         | `lua:filemanager.toggle_tree`             |
 | -        | <kbd>Tab</kbd> & MouseLeft | Open a file, or go into the directory. Goes back a dir if on `..`                           | `lua:filemanager.try_open_at_cursor`      |
 | -        | <kbd>→</kbd>               | Expand directory in tree listing                                                            | `lua:filemanager.uncompress_at_cursor`    |
@@ -67,7 +56,7 @@ Example of keybinding <kbd>F7</kbd> to `lua:filemanager.toggle_tree` below, in t
 
 ```json
 {
-   "F7": "lua:filemanager.toggle_tree"
+	"F7": "lua:filemanager.toggle_tree"
 }
 ```
 
