@@ -271,13 +271,31 @@ local function scanlist_is_empty()
 	end
 end
 
+-- Just returns a number that the pane should be at for width
+local function get_best_width()
+	if tree_BufPane:GetView().Width > (30 + highest_visible_indent) then
+		-- Shave off some width
+		return 30 + highest_visible_indent
+	end
+	return 30
+end
+
+-- Correctly sizes the tree pane so it's 30% width (or more if it needs to fit a nested folder)
+local function resize_everything(resize_tabs)
+	-- Do an if-check here since this might not be necessary all the time..
+	if resize_tabs then
+		-- Resizes all views after opening a file
+		tree_BufPane:Tab():Resize()
+	end
+	-- Resize the pane to its best width
+	local best_width = get_best_width()
+	if tree_BufPane:GetView().Width ~= best_width then
+		tree_BufPane:ResizePane(best_width)
+	end
+end
+
 local function refresh_view()
 	clear_messenger()
-
-	-- If it's less than 30, just use 30 for width. Don't want it too small
-	if tree_BufPane:GetView().Width < 30 then
-		tree_BufPane:ResizePane(30)
-	end
 
 	-- Delete everything in the bufpane/buffer
 	tree_BufPane.Buf.EventHandler:Remove(tree_BufPane.Buf:Start(), tree_BufPane.Buf:End())
@@ -286,7 +304,7 @@ local function refresh_view()
 	-- Current dir
 	tree_BufPane.Buf.EventHandler:Insert(buffer.Loc(0, 0), current_dir .. "\n")
 	-- An ASCII separator
-	tree_BufPane.Buf.EventHandler:Insert(buffer.Loc(0, 1), repeat_str("─", tree_BufPane:GetView().Width) .. "\n")
+	tree_BufPane.Buf.EventHandler:Insert(buffer.Loc(0, 1), repeat_str("─", get_best_width()) .. "\n")
 	-- The ".." and use a newline if there are things in the current dir
 	tree_BufPane.Buf.EventHandler:Insert(buffer.Loc(0, 2), (#scanlist > 0 and "..\n" or ".."))
 
@@ -323,7 +341,8 @@ local function refresh_view()
 	end
 
 	-- Resizes all views after messing with ours
-	tree_BufPane:Tab():Resize()
+	-- true for resizing tabs too
+	resize_everything(true)
 end
 
 -- Moves the cursor to the ".." in tree_BufPane
@@ -441,11 +460,7 @@ local function compress_target(y, delete_y)
 		scanlist = second_table
 	end
 
-	if tree_BufPane:GetView().Width > (30 + highest_visible_indent) then
-		-- Shave off some width
-		tree_BufPane:ResizePane(30 + highest_visible_indent)
-	end
-
+	-- Will resize the view for us too
 	refresh_and_select()
 end
 
@@ -542,8 +557,7 @@ local function try_open_at_y(y)
 			micro.InfoBar():Message("Filemanager opened ", scanlist[y].abspath)
 			-- Opens the absolute path in new vertical view
 			micro.CurPane():VSplitIndex(buffer.NewBufferFromFile(scanlist[y].abspath), true)
-			-- Resizes all views after opening a file
-			tree_BufPane:Tab():Resize()
+			resize_everything(true)
 		end
 	else
 		micro.InfoBar():Error("Can't open that")
@@ -600,8 +614,6 @@ local function uncompress_target(y)
 			if scanlist[y].indent > highest_visible_indent and #scan_results >= 1 then
 				-- Save the new highest indent
 				highest_visible_indent = scanlist[y].indent
-				-- Increase the width to fit the new nested content
-				tree_BufPane:ResizePane(tree_BufPane:GetView().Width + scanlist[y].indent)
 			end
 		end
 
@@ -1035,6 +1047,14 @@ function preQuit(bufpane)
 		close_tree()
 		-- Don't actually "quit", otherwise it closes everything without saving for some reason
 		return false
+	end
+end
+
+function onQuit(bufpane)
+	if bufpane ~= tree_BufPane then
+		-- FIXME: Workaround needed to resize since closing files messes with width
+		-- Not sure what else to do about it...
+		resize_everything(true)
 	end
 end
 
