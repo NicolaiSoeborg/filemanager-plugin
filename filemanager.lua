@@ -861,8 +861,9 @@ local function open_tree()
 	-- Set the width of tree_BufPane to 30% & lock it
 	tree_BufPane:ResizePane(30)
 	-- tree_BufPane.LockWidth = true
-	-- Set the type to unsavable (A "vtScratch" ViewType)
-	tree_BufPane.Buf.Type.Kind = buffer.BTLog
+	-- Set the type to an unsavable, read-only buffer
+	tree_BufPane.Buf.Type.Kind = buffer.BTScratch
+	-- For some reason, you still need these even with a scratch type...
 	tree_BufPane.Buf.Type.Readonly = true
 	tree_BufPane.Buf.Type.Scratch = true
 
