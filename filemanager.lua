@@ -282,6 +282,11 @@ end
 
 -- Correctly sizes the tree pane so it's 30% width (or more if it needs to fit a nested folder)
 local function resize_everything(resize_tabs)
+	-- This can be nil when the close event triggers a resize for some odd reason
+	-- So exit early to avoid errors if this happens
+	if tree_BufPane == nil then
+		return
+	end
 	-- Do an if-check here since this might not be necessary all the time..
 	if resize_tabs then
 		-- Resizes all views after opening a file
